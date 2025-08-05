@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Procedural Galaxy</title>
+  <link rel="stylesheet" href="main.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.167.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.167.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="controls-div">
+    <h2>Controls</h2>
+    <p>Left hold -> Move Camera</p>
+    <p>Right hold -> Pan Camera</p>
+    <p>Scroll Wheel -> Zoom in/out</p>
+    <p>M -> Toggle GUI</p>
+    <div class="param-controls" style="overflow-y: auto; max-height: 300px; display: flex; flex-direction: column;">
+      <label for="num_stars">NUM_STARS:</label>
+      <input type="number" id="num_stars" min="100" max="10000" step="100">
+      <label for="galaxy_thickness">GALAXY_THICKNESS:</label>
+      <input type="number" id="galaxy_thickness" min="1" max="50" step="1">
+      <label for="core_x_dist">CORE_X_DIST:</label>
+      <input type="number" id="core_x_dist" min="1" max="500" step="1">
+      <label for="core_y_dist">CORE_Y_DIST:</label>
+      <input type="number" id="core_y_dist" min="1" max="500" step="1">
+      <label for="outer_core_x_dist">OUTER_CORE_X_DIST:</label>
+      <input type="number" id="outer_core_x_dist" min="1" max="1000" step="1">
+      <label for="outer_core_y_dist">OUTER_CORE_Y_DIST:</label>
+      <input type="number" id="outer_core_y_dist" min="1" max="1000" step="1">
+      <label for="arm_x_dist">ARM_X_DIST:</label>
+      <input type="number" id="arm_x_dist" min="1" max="500" step="1">
+      <label for="arm_y_dist">ARM_Y_DIST:</label>
+      <input type="number" id="arm_y_dist" min="1" max="500" step="1">
+      <label for="arm_x_mean">ARM_X_MEAN:</label>
+      <input type="number" id="arm_x_mean" min="1" max="500" step="1">
+      <label for="arm_y_mean">ARM_Y_MEAN:</label>
+      <input type="number" id="arm_y_mean" min="1" max="500" step="1">
+      <label for="spiral">SPIRAL:</label>
+      <input type="number" id="spiral" min="0.1" max="10" step="0.1">
+      <label for="arms">ARMS:</label>
+      <input type="number" id="arms" min="1" max="10" step="1">
+      <label for="bar_length">BAR_LENGTH:</label>
+      <input type="number" id="bar_length" min="1" max="500" step="1">
+      <label for="bar_width">BAR_WIDTH:</label>
+      <input type="number" id="bar_width" min="1" max="100" step="1">
+      <label for="halo_radius">HALO_RADIUS:</label>
+      <input type="number" id="halo_radius" min="1" max="1000" step="1">
+      <label for="halo_density">HALO_DENSITY:</label>
+      <input type="number" id="halo_density" min="0" max="1" step="0.01">
+      <label for="arm_pitch">ARM_PITCH:</label>
+      <input type="number" id="arm_pitch" min="0.1" max="10" step="0.1">
+      <label for="star_size_variance">STAR_SIZE_VARIANCE:</label>
+      <input type="number" id="star_size_variance" min="0" max="1" step="0.01">
+      <label for="nebula_density">NEBULA_DENSITY:</label>
+      <input type="number" id="nebula_density" min="0" max="0.2" step="0.01">
+      <label for="nebula_scale_min">NEBULA_SCALE_MIN:</label>
+      <input type="number" id="nebula_scale_min" min="1" max="20" step="1">
+      <label for="nebula_scale_max">NEBULA_SCALE_MAX:</label>
+      <input type="number" id="nebula_scale_max" min="5" max="50" step="1">
+      <label for="shader_type">SHADER_TYPE:</label>
+      <select id="shader_type">
+        <option value="composition">Composition (Default)</option>
+        <option value="blackwhite">Black & White</option>
+        <option value="invert">Invert (Fun)</option>
+        <option value="rainbowcycle">Rainbow Cycle</option>
+        <option value="heatmap">Heatmap</option>
+      </select>
+    </div>
+  </div>
+  <script type="module" src="main.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>
