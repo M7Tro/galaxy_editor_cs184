@@ -36,6 +36,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
     nebula_density: 'NEBULA_DENSITY',
     nebula_scale_min: 'NEBULA_SCALE_MIN',
     nebula_scale_max: 'NEBULA_SCALE_MAX',
+    glow_intensity: 'GLOW_INTENSITY',
+    ray_samples: 'RAY_SAMPLES',
+    star_radius: 'STAR_RADIUS',
     shader_type: 'SHADER_TYPE',
   };
 
@@ -57,4 +60,11 @@ document.addEventListener("DOMContentLoaded", (event) => {
       }
     }
   });
+
+  const rayTracePngButton = document.getElementById('rayTracePngButton');
+  if (rayTracePngButton) {
+    rayTracePngButton.addEventListener('click', () => {
+      if (window.rayTracePng) window.rayTracePng();
+    });
+  }
 });

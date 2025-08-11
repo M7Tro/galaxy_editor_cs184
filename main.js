@@ -172,6 +172,9 @@ async function render() {
     const canvas = renderer.domElement;
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
     camera.updateProjectionMatrix();
+    bloomComposer.setSize(canvas.width, canvas.height);
+    overlayComposer.setSize(canvas.width, canvas.height);
+    baseComposer.setSize(canvas.width, canvas.height);
   }
 
   const canvas = renderer.domElement;
@@ -201,6 +204,47 @@ function renderPipeline() {
   baseComposer.render();
 }
 
+function rayTracePng() {
+  const width = 960;
+  const height = 540;
+
+  // Store original settings
+  const originalSize = new THREE.Vector2();
+  renderer.getSize(originalSize);
+  const originalAspect = camera.aspect;
+  const originalPixelRatio = renderer.getPixelRatio();
+
+  // Set new size and aspect
+  renderer.setSize(width, height);
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  bloomComposer.setSize(width, height);
+  overlayComposer.setSize(width, height);
+  baseComposer.setSize(width, height);
+
+  // Render the scene at new resolution
+  renderPipeline();
+
+  // Capture the image
+  const dataUrl = renderer.domElement.toDataURL('image/png');
+
+  // Restore original settings
+  renderer.setSize(originalSize.x, originalSize.y);
+  camera.aspect = originalAspect;
+  camera.updateProjectionMatrix();
+  bloomComposer.setSize(originalSize.x, originalSize.y);
+  overlayComposer.setSize(originalSize.x, originalSize.y);
+  baseComposer.setSize(originalSize.x, originalSize.y);
+
+  // Download
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = 'galaxy-render.png';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 function processCanvasInput(arrayData) {
   lastCanvasArrayData = arrayData; // Store canvas input
   galaxy.regenerate(arrayData);
@@ -208,7 +252,6 @@ function processCanvasInput(arrayData) {
 }
 
 function updateGalaxyParameters() {
-  // Use last canvas input if available, otherwise generate new random array
   const regenData = lastCanvasArrayData || generateSpiralArray(100, 100);
   galaxy.regenerate(regenData);
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
@@ -224,18 +267,19 @@ galaxy = new Galaxy(scene, arrayData);
 
 window.config = config;
 window.regenerateGalaxy = () => {
-  arrayData = lastCanvasArrayData || generateSpiralArray(100, 100); // Always use new random array for default generation
+  arrayData = lastCanvasArrayData || generateSpiralArray(100, 100);
   galaxy.regenerate(arrayData);
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
 };
 
 window.generateStatic = () => {
-  lastCanvasArrayData = generateSpiralArray(100, 100); // Always use new random array for default generation
+  lastCanvasArrayData = generateSpiralArray(100, 100);
   galaxy.regenerate(lastCanvasArrayData);
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
 }
 
 window.processCanvasInput = processCanvasInput;
 window.updateGalaxyParameters = updateGalaxyParameters;
+window.rayTracePng = rayTracePng;
 
 requestAnimationFrame(render);
