@@ -27,7 +27,6 @@
       left: 100%;
       width: 100%;
       height: 100%;
-      background: rgba(255, 255, 255, 0.9);
       transition: left 0.5s ease-in-out;
       display: none;
     }
@@ -94,7 +93,7 @@
   </div>
   <canvas id="drawCanvas"></canvas>
   <div id="drawControls">
-    <button onclick="generateFromCanvas()">Generate Galaxy</button>
+    <button id="generateGalaxyButton">Generate Galaxy</button>
   </div>
   <script type="importmap">
     {
@@ -106,6 +105,7 @@
   </script>
   <script type="module">
     import { config } from './config/galaxyConfig.js';
+    import { initDrawCanvas } from './drawCanvas.js';
 
     // Toggle controls visibility with 'M' key
     document.addEventListener('keydown', (event) => {
@@ -126,71 +126,17 @@
       });
     });
 
-    // Drawing canvas functionality
-    const drawCanvas = document.getElementById('drawCanvas');
-    const drawControls = document.getElementById('drawControls');
-    let ctx = null;
-    let isDrawing = false;
-
-    function initDrawCanvas() {
-      if (drawCanvas) {
-        drawCanvas.width = window.innerWidth;
-        drawCanvas.height = window.innerHeight;
-        ctx = drawCanvas.getContext('2d');
-        if (ctx) {
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-          ctx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
-          ctx.strokeStyle = 'black';
-          ctx.lineWidth = 5;
-          ctx.lineCap = 'round';
-        }
-      }
-    }
-
+    // Show draw canvas
     window.showDrawCanvas = () => {
-      initDrawCanvas();
-      drawCanvas.classList.add('active');
-      drawControls.classList.add('active');
-      document.getElementById('controls').style.display = 'none';
-    };
-
-    window.generateFromCanvas = () => {
-      drawCanvas.classList.remove('active');
-      drawControls.classList.remove('active');
-      document.getElementById('controls').style.display = 'block';
-      if (window.processCanvasInput) {
-        window.processCanvasInput(drawCanvas);
+      const drawCanvas = document.getElementById('drawCanvas');
+      const drawControls = document.getElementById('drawControls');
+      if (drawCanvas && drawControls) {
+        drawCanvas.classList.add('active');
+        drawControls.classList.add('active');
+        document.getElementById('controls').style.display = 'none';
+        initDrawCanvas();
       }
     };
-
-    if (drawCanvas) {
-      drawCanvas.addEventListener('mousedown', (e) => {
-        if (ctx) {
-          isDrawing = true;
-          ctx.beginPath();
-          ctx.moveTo(e.clientX, e.clientY);
-        }
-      });
-
-      drawCanvas.addEventListener('mousemove', (e) => {
-        if (isDrawing && ctx) {
-          ctx.lineTo(e.clientX, e.clientY);
-          ctx.stroke();
-        }
-      });
-
-      drawCanvas.addEventListener('mouseup', () => {
-        isDrawing = false;
-        if (ctx) ctx.closePath();
-      });
-
-      drawCanvas.addEventListener('mouseout', () => {
-        isDrawing = false;
-        if (ctx) ctx.closePath();
-      });
-
-      window.addEventListener('resize', initDrawCanvas);
-    }
   </script>
   <script type="module" src="main.js"></script>
 </body>

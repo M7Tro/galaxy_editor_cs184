@@ -200,28 +200,9 @@ function renderPipeline() {
   baseComposer.render();
 }
 
-function processCanvasInput(drawCanvas) {
-  const ctx = drawCanvas.getContext('2d');
-  const width = 100; // Match generateArray.js dimensions
-  const height = 100;
-  const imageData = ctx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
-  const data = Array(height).fill().map(() => Array(width).fill(0));
-
-  // Downsample canvas to 100x100 array
-  const scaleX = drawCanvas.width / width;
-  const scaleY = drawCanvas.height / height;
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const px = Math.floor(x * scaleX);
-      const py = Math.floor(y * scaleY);
-      const index = (py * imageData.width + px) * 4;
-      // Use red channel (grayscale) and invert (black = high intensity)
-      data[y][x] = 1 - (imageData.data[index] / 255); // Invert: black (0) -> 1, white (255) -> 0
-    }
-  }
-
-  const arrayData = { data, width, height };
+function processCanvasInput(arrayData) {
   galaxy.regenerate(arrayData);
+  baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
 }
 
 initThree();
