@@ -19,6 +19,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
 let canvas, renderer, camera, scene, orbit, baseComposer, bloomComposer, overlayComposer, shaderPasses, galaxy;
+let lastCanvasArrayData = null; // Store last canvas input
 
 function initThree() {
   canvas = document.querySelector("#canvas");
@@ -201,6 +202,7 @@ function renderPipeline() {
 }
 
 function processCanvasInput(arrayData) {
+  lastCanvasArrayData = arrayData; // Store canvas input
   galaxy.regenerate(arrayData);
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
 }
@@ -215,10 +217,17 @@ galaxy = new Galaxy(scene, arrayData);
 
 window.config = config;
 window.regenerateGalaxy = () => {
-  arrayData = generateSpiralArray(100, 100); // Regenerate new random array
-  galaxy.regenerate(arrayData); // Regenerate with new array
+  // Use last canvas input if available, otherwise generate new random array
+  const regenData = lastCanvasArrayData || generateSpiralArray(100, 100);
+  galaxy.regenerate(regenData);
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
 };
+
+window.generateStatic = () =>{
+  const regenData = generateSpiralArray(100, 100);
+  galaxy.regenerate(regenData);
+  baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
+}
 
 window.processCanvasInput = processCanvasInput;
 
