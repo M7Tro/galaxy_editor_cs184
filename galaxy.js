@@ -7,11 +7,12 @@ import { Nebula } from "./nebula.js";
 
 //galaxy class
 export class Galaxy {
-  constructor(scene) {
+  constructor(scene, arrayData = null) {
     this.scene = scene;
-    this.stars = this.generateStars();
-    this.haze = this.generateHaze();
-    this.nebulae = this.generateNebulae();
+    this.arrayData = arrayData; // Store 2D array data if provided
+    this.stars = this.arrayData ? this.generateStarsFromArray() : this.generateStars();
+    this.haze = this.arrayData ? this.generateHazeFromArray() : this.generateHaze();
+    this.nebulae = this.arrayData ? this.generateNebulaeFromArray() : this.generateNebulae();
     this.stars.forEach((star) => star.toThreeObject(scene));
     this.haze.forEach((haze) => haze.toThreeObject(scene));
     this.nebulae.forEach((nebula) => nebula.toThreeObject(scene));
@@ -29,13 +30,14 @@ export class Galaxy {
       nebula.updateScale(camera);
     });
   }
-  regenerate() {
+  regenerate(arrayData = null) {
     this.stars.forEach((star) => this.scene.remove(star.obj));
     this.haze.forEach((haze) => this.scene.remove(haze.obj));
     this.nebulae.forEach((nebula) => this.scene.remove(nebula.obj));
-    this.stars = this.generateStars();
-    this.haze = this.generateHaze();
-    this.nebulae = this.generateNebulae();
+    this.arrayData = arrayData || this.arrayData; // Update array data if provided
+    this.stars = this.arrayData ? this.generateStarsFromArray() : this.generateStars();
+    this.haze = this.arrayData ? this.generateHazeFromArray() : this.generateHaze();
+    this.nebulae = this.arrayData ? this.generateNebulaeFromArray() : this.generateNebulae();
     this.stars.forEach((star) => star.toThreeObject(this.scene));
     this.haze.forEach((haze) => haze.toThreeObject(this.scene));
     this.nebulae.forEach((nebula) => nebula.toThreeObject(this.scene));
@@ -174,7 +176,7 @@ export class Galaxy {
   }
   generateNebulae() {
     let nebulae = [];
-    const numNebulae = Math.floor(config.NUM_STARS * config.NEBULA_DENSITY); // Updated: Use density
+    const numNebulae = Math.floor(config.NUM_STARS * config.NEBULA_DENSITY);
 
     // Core nebulae
     for (let i = 0; i < numNebulae / 4; i++) {
@@ -214,5 +216,124 @@ export class Galaxy {
     }
 
     return nebulae;
+  }
+  generateStarsFromArray() {
+    let stars = [];
+    const { data, width, height } = this.arrayData;
+    const diskStars = config.NUM_STARS * (1 - config.HALO_DENSITY);
+    const scaleX = (config.OUTER_CORE_X_DIST * 2) / width;
+    const scaleY = (config.OUTER_CORE_Y_DIST * 2) / height;
+
+    // Core and bar regions
+    for (let i = 0; i < diskStars; i++) {
+      let x, y, intensity;
+      do {
+        x = Math.floor(Math.random() * width);
+        y = Math.floor(Math.random() * height);
+        intensity = data[y][x]; // 0 to 1
+      } while (Math.random() > intensity); // Reject if random > intensity
+
+      let pos = new THREE.Vector3(
+        (x - width / 2) * scaleX,
+        (y - height / 2) * scaleY,
+        gaussianRandom(0, config.GALAXY_THICKNESS)
+      );
+      let region = this.determineRegion(pos);
+      let star = new Star(pos, region);
+      stars.push(star);
+    }
+
+    // Stellar halo (unchanged, as array-based generation focuses on disk)
+    for (let i = 0; i < config.NUM_STARS * config.HALO_DENSITY; i++) {
+      let u = Math.random();
+      let r = Math.pow(u, 1/3) * config.HALO_RADIUS;
+      let theta = Math.random() * 2 * Math.PI;
+      let phi = Math.acos(2 * Math.random() - 1);
+      let pos = new THREE.Vector3(
+        r * Math.sin(phi) * Math.cos(theta),
+        r * Math.sin(phi) * Math.sin(theta),
+        r * Math.cos(phi)
+      );
+      let star = new Star(pos, 'halo');
+      stars.push(star);
+    }
+
+    return stars;
+  }
+  generateHazeFromArray() {
+    let haze = [];
+    const { data, width, height } = this.arrayData;
+    const diskStars = config.NUM_STARS * (1 - config.HALO_DENSITY);
+    const scaleX = (config.OUTER_CORE_X_DIST * 2) / width;
+    const scaleY = (config.OUTER_CORE_Y_DIST * 2) / height;
+
+    for (let i = 0; i < diskStars; i++) {
+      let x, y, intensity;
+      do {
+        x = Math.floor(Math.random() * width);
+        y = Math.floor(Math.random() * height);
+        intensity = data[y][x];
+      } while (Math.random() > intensity);
+
+      let pos = new THREE.Vector3(
+        (x - width / 2) * scaleX,
+        (y - height / 2) * scaleY,
+        gaussianRandom(0, config.GALAXY_THICKNESS)
+      );
+      let region = this.determineRegion(pos);
+      let h = new Haze(pos, region);
+      haze.push(h);
+    }
+
+    // Stellar halo
+    for (let i = 0; i < config.NUM_STARS * config.HALO_DENSITY; i++) {
+      let u = Math.random();
+      let r = Math.pow(u, 1/3) * config.HALO_RADIUS;
+      let theta = Math.random() * 2 * Math.PI;
+      let phi = Math.acos(2 * Math.random() - 1);
+      let pos = new THREE.Vector3(
+        r * Math.sin(phi) * Math.cos(theta),
+        r * Math.sin(phi) * Math.sin(theta),
+        r * Math.cos(phi)
+      );
+      let h = new Haze(pos, 'halo');
+      haze.push(h);
+    }
+
+    return haze;
+  }
+  generateNebulaeFromArray() {
+    let nebulae = [];
+    const { data, width, height } = this.arrayData;
+    const numNebulae = Math.floor(config.NUM_STARS * config.NEBULA_DENSITY);
+    const scaleX = (config.OUTER_CORE_X_DIST * 1.5 * 2) / width;
+    const scaleY = (config.OUTER_CORE_Y_DIST * 1.5 * 2) / height;
+
+    for (let i = 0; i < numNebulae; i++) {
+      let x, y, intensity;
+      do {
+        x = Math.floor(Math.random() * width);
+        y = Math.floor(Math.random() * height);
+        intensity = data[y][x];
+      } while (Math.random() > intensity);
+
+      let pos = new THREE.Vector3(
+        (x - width / 2) * scaleX,
+        (y - height / 2) * scaleY,
+        gaussianRandom(0, config.GALAXY_THICKNESS * 2)
+      );
+      let region = this.determineRegion(pos);
+      let nebula = new Nebula(pos, region);
+      nebulae.push(nebula);
+    }
+
+    return nebulae;
+  }
+  determineRegion(pos) {
+    const dist = Math.sqrt(pos.x * pos.x + pos.y * pos.y);
+    if (dist < config.CORE_X_DIST || dist < config.CORE_Y_DIST) return 'core';
+    if (dist < config.OUTER_CORE_X_DIST || dist < config.OUTER_CORE_Y_DIST) return 'core';
+    if (Math.abs(pos.x) < config.BAR_LENGTH && Math.abs(pos.y) < config.BAR_WIDTH) return 'bar';
+    return 'arms'; // Default to arms for spiral structure
   }
 }

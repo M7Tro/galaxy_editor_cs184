@@ -4,34 +4,21 @@ import * as THREE from "three";
 import { CompositionShader } from "./shaders/CompositionShader.js";
 import { BlackWhiteShader } from "./shaders/BlackWhiteShader.js";
 import { InvertShader } from "./shaders/InvertShader.js";
-import { RainbowCycleShader } from "./shaders/RainbowCycleShader.js"; // Added
-import { HeatmapShader } from "./shaders/HeatmapShader.js"; // Added
-import {
-  BASE_LAYER,
-  BLOOM_LAYER,
-  BLOOM_PARAMS,
-  OVERLAY_LAYER,
-} from "./config/renderConfig.js";
+import { RainbowCycleShader } from "./shaders/RainbowCycleShader.js";
+import { HeatmapShader } from "./shaders/HeatmapShader.js";
+import { BASE_LAYER, BLOOM_LAYER, BLOOM_PARAMS, OVERLAY_LAYER } from "./config/renderConfig.js";
+import { generateSpiralArray } from "./generateArray.js"; // New import
+import { Galaxy } from "./galaxy.js";
+import { config } from "./config/galaxyConfig.js";
 
 // Rendering
 import { MapControls } from "three/addons/controls/MapControls.js";
-
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-import { Galaxy } from "./galaxy.js";
-import { config } from "./config/galaxyConfig.js";
 
-let canvas,
-  renderer,
-  camera,
-  scene,
-  orbit,
-  baseComposer,
-  bloomComposer,
-  overlayComposer,
-  shaderPasses;
+let canvas, renderer, camera, scene, orbit, baseComposer, bloomComposer, overlayComposer, shaderPasses, galaxy;
 
 function initThree() {
   canvas = document.querySelector("#canvas");
@@ -138,7 +125,7 @@ function initRenderPipeline() {
           baseTexture: { value: null },
           bloomTexture: { value: bloomComposer.renderTarget2.texture },
           overlayTexture: { value: overlayComposer.renderTarget2.texture },
-          time: { value: 0.0 }, // Added for animation
+          time: { value: 0.0 },
         },
         vertexShader: RainbowCycleShader.vertex,
         fragmentShader: RainbowCycleShader.fragment,
@@ -217,11 +204,13 @@ initThree();
 let axes = new THREE.AxesHelper(5.0);
 scene.add(axes);
 
-let galaxy = new Galaxy(scene);
+// Initialize galaxy with sample 2D array
+const arrayData = generateSpiralArray(100, 100); // 100x100 grid
+galaxy = new Galaxy(scene, arrayData);
 
 window.config = config;
 window.regenerateGalaxy = () => {
-  galaxy.regenerate();
+  galaxy.regenerate(arrayData); // Regenerate with 2D array
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
 };
 
