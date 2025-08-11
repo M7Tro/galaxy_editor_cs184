@@ -3,7 +3,7 @@ import {
   HAZE_MAX,
   HAZE_MIN,
   HAZE_OPACITY,
-} from "./config/renderConfig.js";
+} from "../config/renderConfig.js";
 import { clamp } from "./utils.js";
 import * as THREE from "three";
 

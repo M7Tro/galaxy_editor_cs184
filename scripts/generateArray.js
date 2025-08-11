@@ -1,4 +1,4 @@
-import { config } from "./config/galaxyConfig.js";
+import { config } from "../config/galaxyConfig.js";
 
 // Simple Perlin noise for variation
 function perlinNoise(x, y, scale, seed) {

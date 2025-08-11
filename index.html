@@ -1,190 +1,268 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Galaxy Simulation</title>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    #canvas { display: block; z-index: 1; }
-    #controls {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 10px;
-      border-radius: 5px;
-      width: 320px; /* Fixed width for consistent layout */
-      min-height: 650px; /* Fixed height to prevent shrinking */
-      box-sizing: border-box; /* Prevent content overflow */
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      z-index: 3; /* Above canvas */
-    }
-    #controls.hidden {
-      display: none; /* Toggle visibility */
-    }
-    #controls h2, #controls h3 {
-      margin: 0;
-    }
-    #controls button {
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-    #controls .control-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
-    #controls .control-row label {
-      flex: 1; /* Label takes available space */
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      padding-right: 10px;
-    }
-    #controls .control-row input,
-    #controls .control-row select {
-      width: 100px; /* Fixed width for inputs */
-      box-sizing: border-box;
-    }
-    #drawCanvas {
-      position: absolute;
-      top: 0;
-      left: 100%;
-      width: 100%;
-      height: 100%;
-      transition: left 0.5s ease-in-out;
-      display: none;
-      z-index: 2; /* Above 3D canvas, below controls */
-    }
-    #drawCanvas.active {
-      left: 0;
-      display: block;
-    }
-    #drawControls {
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: none;
-      z-index: 3; /* Above drawCanvas */
-    }
-    #drawControls.active {
-      display: block;
-    }
-    #drawControls button {
-      padding: 10px 20px;
-      font-size: 18px;
-      margin: 0 5px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    #drawControls #generateGalaxyButton {
-      background-color: #007bff;
-      color: white;
-    }
-    #drawControls #generateGalaxyButton:hover {
-      background-color: #0056b3;
-    }
-    #drawControls #clearCanvasButton {
-      background-color: #dc3545;
-      color: white;
-    }
-    #drawControls #clearCanvasButton:hover {
-      background-color: #b02a37;
-    }
-  </style>
-</head>
-<body>
-  <canvas id="canvas"></canvas>
-  <div id="controls">
-    <h2>Controls</h2>
-    <p>Left hold -> Move Camera</p>
-    <p>Right hold -> Pan Camera</p>
-    <p>Scroll Wheel -> Zoom in/out</p>
-    <p>M -> Toggle GUI</p>
-    <button onclick="showDrawCanvas()">Draw Galaxy</button>
-    <button onclick="generateStatic()">Generate Galaxy</button>
-    <h3>Config</h3>
-    <div class="control-row"><label>NUM_STARS:</label><input type="number" id="num_stars" value="3500" /></div>
-    <div class="control-row"><label>GALAXY_THICKNESS:</label><input type="number" id="galaxy_thickness" value="10" /></div>
-    <div class="control-row"><label>CORE_X_DIST:</label><input type="number" id="core_x_dist" value="66" /></div>
-    <div class="control-row"><label>CORE_Y_DIST:</label><input type="number" id="core_y_dist" value="66" /></div>
-    <div class="control-row"><label>OUTER_CORE_X_DIST:</label><input type="number" id="outer_core_x_dist" value="338" /></div>
-    <div class="control-row"><label>OUTER_CORE_Y_DIST:</label><input type="number" id="outer_core_y_dist" value="338" /></div>
-    <div class="control-row"><label>ARM_X_DIST:</label><input type="number" id="arm_x_dist" value="200" /></div>
-    <div class="control-row"><label>ARM_Y_DIST:</label><input type="number" id="arm_y_dist" value="100" /></div>
-    <div class="control-row"><label>ARM_X_MEAN:</label><input type="number" id="arm_x_mean" value="400" /></div>
-    <div class="control-row"><label>ARM_Y_MEAN:</label><input type="number" id="arm_y_mean" value="200" /></div>
-    <div class="control-row"><label>SPIRAL:</label><input type="number" id="spiral" value="3.0" /></div>
-    <div class="control-row"><label>ARMS:</label><input type="number" id="arms" value="2.0" /></div>
-    <div class="control-row"><label>BAR_LENGTH:</label><input type="number" id="bar_length" value="200" /></div>
-    <div class="control-row"><label>BAR_WIDTH:</label><input type="number" id="bar_width" value="40" /></div>
-    <div class="control-row"><label>HALO_RADIUS:</label><input type="number" id="halo_radius" value="600" /></div>
-    <div class="control-row"><label>HALO_DENSITY:</label><input type="number" id="halo_density" value="0.1" step="0.01" /></div>
-    <div class="control-row"><label>ARM_PITCH:</label><input type="number" id="arm_pitch" value="3.0" /></div>
-    <div class="control-row"><label>STAR_SIZE_VARIANCE:</label><input type="number" id="star_size_variance" value="0.3" step="0.01" /></div>
-    <div class="control-row"><label>NEBULA_DENSITY:</label><input type="number" id="nebula_density" value="0.05" step="0.01" /></div>
-    <div class="control-row"><label>NEBULA_SCALE_MIN:</label><input type="number" id="nebula_scale_min" value="5" /></div>
-    <div class="control-row"><label>NEBULA_SCALE_MAX:</label><input type="number" id="nebula_scale_max" value="15" /></div>
-    <div class="control-row"><label>SHADER_TYPE:</label>
-      <select id="shader_type">
-        <option value="composition">Composition (Default)</option>
-        <option value="blackwhite">Black & White</option>
-        <option value="invert">Invert (Fun)</option>
-        <option value="rainbowcycle">Rainbow Cycle</option>
-        <option value="heatmap">Heatmap</option>
-      </select>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galaxy Simulation</title>
+    <link rel="icon" href="/resources/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="styles_gal.css" />
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <div id="controls">
+      <h2>Controls</h2>
+      <p>Left hold -> Move Camera</p>
+      <p>Right hold -> Pan Camera</p>
+      <p>Scroll Wheel -> Zoom in/out</p>
+      <p>M -> Toggle GUI</p>
+      <button id="drawbtn">Draw Galaxy</button>
+      <button onclick="generateStatic()">Generate Galaxy</button>
+      <label
+          for="shader_type"
+          style="padding: 8px 14px; display: block; cursor: pointer"
+        >
+          Select Shader:
+          <select
+            id="shader_type"
+            style="width: 100%; margin-top: 6px; padding: 6px; font-size: 14px"
+          >
+            <option value="composition">Composition (Default)</option>
+            <option value="blackwhite">Black & White</option>
+            <option value="invert">Invert (Fun)</option>
+            <option value="rainbowcycle">Rainbow Cycle</option>
+            <option value="heatmap">Heatmap</option>
+          </select>
+        </label>
+
+      <div class="dropdown-container">
+        <div class="dropdown">
+          <button onclick="toggleMenu('dropdownMenu1')" class="dropbtn">
+            Parameters <span class="arrow">←</span>
+          </button>
+          <div id="dropdownMenu1" class="dropdown-content">
+            <label>
+              Num_Stars:
+              <input
+                id="stars"
+                type="number"
+                min="0"
+                value="3500"
+              />
+            </label>
+
+            <label>
+              Galaxy_Thickness:
+              <input
+                id="thick"
+                type="number"
+                min="0"
+                value="5"
+              />
+            </label>
+
+            <label>
+              Core_Dist:
+              <div class="xy-inputs">
+                <input
+                  id="corex"
+                  type="number"
+                  min="0"
+                  placeholder="X"
+                  aria-label="X value"
+                />
+                <input
+                  id="corey"
+                  type="number"
+                  min="0"
+                  placeholder="Y"
+                  aria-label="Y value"
+                />
+              </div>
+            </label>
+
+            <label>
+              Outer_Core_Dist:
+              <div class="xy-inputs">
+                <input
+                  id="outcorex"
+                  type="number"
+                  min="0"
+                  placeholder="X"
+                  aria-label="X value"
+                />
+                <input
+                  id="outcorey"
+                  type="number"
+                  min="0"
+                  placeholder="Y"
+                  aria-label="Y value"
+                />
+              </div>
+            </label>
+
+            <label>
+              Arm_Dist:
+              <div class="xy-inputs">
+                <input
+                  id="armx"
+                  type="number"
+                  min="0"
+                  placeholder="X"
+                  aria-label="X value"
+                />
+                <input
+                  id="army"
+                  type="number"
+                  min="0"
+                  placeholder="Y"
+                  aria-label="Y vstyles.cssalue"
+                />
+              </div>
+            </label>
+
+            <label>
+              Arm_Mean:
+              <div class="xy-inputs">
+                <input
+                  id="armmx"
+                  type="number"
+                  min="0"
+                  placeholder="X"
+                  aria-label="X value"
+                />
+                <input
+                  id="armmy"
+                  type="number"
+                  min="0"
+                  placeholder="Y"
+                  aria-label="Y value"
+                />
+              </div>
+            </label>
+
+            <label>
+              Spiral:
+              <input
+                id="spiral"
+                type="number"
+                min="0"
+                value="3"
+              />
+            </label>
+
+            <label>
+              Arms:
+              <input
+                id="arms"
+                type="number"
+                min="0"
+                value="2"
+              />
+            </label>
+
+            <label>
+              Bar_dim:
+              <div class="xy-inputs">
+                <input
+                  id="barl"
+                  type="number"
+                  min="0"
+                  placeholder="L"
+                  aria-label="L value"
+                />
+                <input
+                  id="barw"
+                  type="number"
+                  min="0"
+                  placeholder="W"
+                  aria-label="W value"
+                />
+              </div>
+            </label>
+
+            <label>
+              Halo_Rad:
+              <input
+                id="halorad"
+                type="number"
+                min="0"
+                value="300"
+              />
+            </label>
+
+            <label>
+              Halo_Density:
+              <input
+                id="haloden"
+                type="number"
+                min="0"
+                value="0.1"
+              />
+            </label>
+
+            <label>
+              Arm_Pitch:
+              <input
+                id="armpit"
+                type="number"
+                min="0"
+                value="3"
+              />
+            </label>
+
+            <label>
+              Star_Size_Vari:
+              <input
+                id="starvari"
+                type="number"
+                min="0"
+                value="0.3"
+              />
+            </label>
+
+            <label>
+              Nebula_Density:
+              <input
+                id="nebden"
+                type="number"
+                min="0"
+                value="0.05"
+              />
+            </label>
+
+            <label>
+              Nebula_Scale:
+              <div class="xy-inputs">
+                <input
+                  id="nebmin"
+                  type="number"
+                  min="0"
+                  placeholder="min"
+                  aria-label="min value"
+                />
+                <input
+                  id="nebmax"
+                  type="number"
+                  min="0"
+                  placeholder="max"
+                  aria-label="max value"
+                />
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-  <canvas id="drawCanvas"></canvas>
-  <div id="drawControls">
-    <button id="generateGalaxyButton">Generate Galaxy</button>
-    <button id="clearCanvasButton">Clear Canvas</button>
-  </div>
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.168.0/examples/jsm/"
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.168.0/examples/jsm/"
+        }
       }
-    }
-  </script>
-  <script type="module">
-    import { config } from './config/galaxyConfig.js';
-    import { initDrawCanvas } from './drawCanvas.js';
-
-    // Show draw canvas
-    window.showDrawCanvas = () => {
-      const drawCanvas = document.getElementById('drawCanvas');
-      const drawControls = document.getElementById('drawControls');
-      const controls = document.getElementById('controls');
-      if (drawCanvas && drawControls && controls) {
-        drawCanvas.classList.add('active');
-        drawControls.classList.add('active');
-        controls.classList.add('hidden');
-        initDrawCanvas(); // Ensure canvas is initialized
-      }
-    };
-
-    // Hide draw canvas (called by generateGalaxyButton in drawCanvas.js)
-    window.hideDrawCanvas = () => {
-      const drawCanvas = document.getElementById('drawCanvas');
-      const drawControls = document.getElementById('drawControls');
-      const controls = document.getElementById('controls');
-      if (drawCanvas && drawControls && controls) {
-        drawCanvas.classList.remove('active');
-        drawControls.classList.remove('active');
-        controls.classList.remove('hidden');
-      }
-    };
-  </script>
-  <script type="module" src="main.js"></script>
-  <script type="module" src="index.js"></script>
-</body>
+    </script>
+    <script type="module" src="./scripts/main.js"></script>
+    <script type="module" src="./scripts/index.js"></script>
+    <script src="./scripts/dropmen.js"></script>
+  </body>
 </html>

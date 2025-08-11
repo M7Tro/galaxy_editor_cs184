@@ -1,15 +1,15 @@
 import * as THREE from "three";
 
 // Data and visualization
-import { CompositionShader } from "./shaders/CompositionShader.js";
-import { BlackWhiteShader } from "./shaders/BlackWhiteShader.js";
-import { InvertShader } from "./shaders/InvertShader.js";
-import { RainbowCycleShader } from "./shaders/RainbowCycleShader.js";
-import { HeatmapShader } from "./shaders/HeatmapShader.js";
-import { BASE_LAYER, BLOOM_LAYER, BLOOM_PARAMS, OVERLAY_LAYER } from "./config/renderConfig.js";
+import { CompositionShader } from "../shaders/CompositionShader.js";
+import { BlackWhiteShader } from "../shaders/BlackWhiteShader.js";
+import { InvertShader } from "../shaders/InvertShader.js";
+import { RainbowCycleShader } from "../shaders/RainbowCycleShader.js";
+import { HeatmapShader } from "../shaders/HeatmapShader.js";
+import { BASE_LAYER, BLOOM_LAYER, BLOOM_PARAMS, OVERLAY_LAYER } from "../config/renderConfig.js";
 import { generateSpiralArray } from "./generateArray.js";
 import { Galaxy } from "./galaxy.js";
-import { config } from "./config/galaxyConfig.js";
+import { config } from "../config/galaxyConfig.js";
 
 // Rendering
 import { MapControls } from "three/addons/controls/MapControls.js";

@@ -3,13 +3,13 @@ import {
   HAZE_MAX,
   HAZE_MIN,
   HAZE_OPACITY,
-} from "./config/renderConfig.js";
+} from "../config/renderConfig.js";
 import { clamp } from "./utils.js";
 import * as THREE from "three";
-import { config } from "./config/galaxyConfig.js"; // Added for scales
+import { config } from "../config/galaxyConfig.js"; // Added for scales
 
 const nebulaTexture = new THREE.TextureLoader().load(
-  "./resources/nebula.png"
+  "../resources/nebula.png"
 );
 const nebulaSprite = new THREE.SpriteMaterial({
   map: nebulaTexture,
