@@ -9,6 +9,7 @@ import { HeatmapShader } from "./shaders/HeatmapShader.js";
 import { BASE_LAYER, BLOOM_LAYER, BLOOM_PARAMS, OVERLAY_LAYER } from "./config/renderConfig.js";
 import { generateSpiralArray } from "./generateArray.js";
 import { Galaxy } from "./galaxy.js";
+import {LightingGalaxy} from "./LightingGalaxy.js"
 import { config } from "./config/galaxyConfig.js";
 
 // Rendering
@@ -44,6 +45,49 @@ function initThree() {
   orbit.maxDistance = 16384;
   orbit.maxPolarAngle = Math.PI / 2 - Math.PI / 360;
 
+    // Add real lights BY ME
+
+  //Point Light
+  // const pointLight = new THREE.PointLight(0xffffff, 1000, 0);
+  // const pointLight1 = new THREE.PointLight(0xffffff, 1000, 0);
+  // const pointLight2 = new THREE.PointLight(0xffffff, 1000, 0);
+
+
+
+  // // Position the light in your scene
+  // pointLight.position.set(150, 150, 0);
+  // pointLight1.position.set(20, 20, 20);
+  // pointLight2.position.set(50, 50, 0);
+
+  // // Optionally add a helper to visualize the light position
+  // const pointLightHelper = new THREE.PointLightHelper(pointLight, 1);
+  // scene.add(pointLightHelper);
+  
+  // const pointLightHelper1 = new THREE.PointLightHelper(pointLight1, 1);
+  // scene.add(pointLightHelper1);
+
+  // const pointLightHelper2 = new THREE.PointLightHelper(pointLight2, 1);
+  // scene.add(pointLightHelper2);
+
+  // // Add the light to your scene
+  // scene.add(pointLight);
+  // scene.add(pointLight1);
+  // scene.add(pointLight2);
+
+  // //Ambient Light
+  // // const ambientLight = new THREE.AmbientLight(0x404040, 0.7);
+  // // scene.add(ambientLight);
+
+  // // //Directional Light
+  // const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+  // directionalLight.position.set(10, 10, 10);
+  // scene.add(directionalLight);
+  // UnrealBloomPass.enabled = false;
+
+  // //Hemisphere light
+  // const hemi = new THREE.HemisphereLight(0x88aaff, 0x000011, 0.0);
+  // scene.add(hemi);
+
   initRenderPipeline();
 }
 
@@ -56,8 +100,17 @@ function initRenderPipeline() {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputEncoding = THREE.sRGBEncoding;
+
+    //COMMENT OUT FOR NOW
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.5;
+
+  //ADDED
+  // renderer.toneMapping = THREE.NoToneMapping;
+  // renderer.toneMappingExposure = 1.0;
+  
+
+  
 
   const renderScene = new RenderPass(scene, camera);
 
@@ -220,8 +273,12 @@ scene.add(axes);
 
 // Initialize galaxy with random 2D array
 let arrayData = generateSpiralArray(100, 100); // 100x100 grid
-galaxy = new Galaxy(scene, arrayData);
 
+galaxy = new Galaxy(scene, arrayData); //CHANGE BACK LATER
+//galaxy = new LightingGalaxy(scene, arrayData);
+
+
+//COMMENTED OUT BY ME
 window.config = config;
 window.regenerateGalaxy = () => {
   arrayData = lastCanvasArrayData || generateSpiralArray(100, 100); // Always use new random array for default generation
@@ -237,5 +294,14 @@ window.generateStatic = () => {
 
 window.processCanvasInput = processCanvasInput;
 window.updateGalaxyParameters = updateGalaxyParameters;
+//COMMENTED OUT BY ME
+
+
+//added by me 
+// window.config = config;
+// window.regenerateGalaxy = () => {
+//   galaxy.regenerate();
+//   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
+// };
 
 requestAnimationFrame(render);

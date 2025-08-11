@@ -5,46 +5,47 @@ import { gaussianRandom, spiral } from "./utils.js";
 import { Haze } from "./haze.js";
 import { Nebula } from "./nebula.js";
 
-//galaxy class
-export class Galaxy {
+//Lighting galaxy class
+export class LightingGalaxy {
   constructor(scene, arrayData = null) {
     this.scene = scene;
     this.arrayData = arrayData; // Store 2D array data if provided
-    this.stars = this.arrayData ? this.generateStarsFromArray() : this.generateStars();
-    this.haze = this.arrayData ? this.generateHazeFromArray() : this.generateHaze();
-    this.nebulae = this.arrayData ? this.generateNebulaeFromArray() : this.generateNebulae();
+    this.stars = this.arrayData ? this.generateStarsFromArray() : this.LgenerateStars();
+    //this.haze = this.arrayData ? this.generateHazeFromArray() : this.generateHaze();
+    //this.nebulae = this.arrayData ? this.generateNebulaeFromArray() : this.generateNebulae();
     this.stars.forEach((star) => star.toThreeObject(scene));
-    this.haze.forEach((haze) => haze.toThreeObject(scene));
-    this.nebulae.forEach((nebula) => nebula.toThreeObject(scene));
+    //this.haze.forEach((haze) => haze.toThreeObject(scene));
+    //this.nebulae.forEach((nebula) => nebula.toThreeObject(scene));
   }
   updateScale(camera) {
     this.stars.forEach((star) => {
       star.updateScale(camera);
     });
 
-    this.haze.forEach((haze) => {
-      haze.updateScale(camera);
-    });
+    // this.haze.forEach((haze) => {
+    //   haze.updateScale(camera);
+    // });
 
-    this.nebulae.forEach((nebula) => {
-      nebula.updateScale(camera);
-    });
+    // this.nebulae.forEach((nebula) => {
+    //   nebula.updateScale(camera);
+    // });
   }
   regenerate(arrayData = null) {
     this.stars.forEach((star) => this.scene.remove(star.obj));
-    this.haze.forEach((haze) => this.scene.remove(haze.obj));
-    this.nebulae.forEach((nebula) => this.scene.remove(nebula.obj));
+    //this.haze.forEach((haze) => this.scene.remove(haze.obj));
+    //this.nebulae.forEach((nebula) => this.scene.remove(nebula.obj));
     this.arrayData = arrayData || this.arrayData; // Update array data if provided
-    this.stars = this.arrayData ? this.generateStarsFromArray() : this.generateStars();
-    this.haze = this.arrayData ? this.generateHazeFromArray() : this.generateHaze();
-    this.nebulae = this.arrayData ? this.generateNebulaeFromArray() : this.generateNebulae();
+    this.stars = this.arrayData ? this.generateStarsFromArray() : this.LgenerateStars();
+    //this.haze = this.arrayData ? this.generateHazeFromArray() : this.generateHaze();
+    //this.nebulae = this.arrayData ? this.generateNebulaeFromArray() : this.generateNebulae();
     this.stars.forEach((star) => star.toThreeObject(this.scene));
-    this.haze.forEach((haze) => haze.toThreeObject(this.scene));
-    this.nebulae.forEach((nebula) => nebula.toThreeObject(this.scene));
+    //this.haze.forEach((haze) => haze.toThreeObject(this.scene));
+    //this.nebulae.forEach((nebula) => nebula.toThreeObject(this.scene));
   }
 
 
-  generateStars() {
+//FOR LIGHTING
+LgenerateStars() {
     let stars = [];
     const diskStars = config.NUM_STARS * (1 - config.HALO_DENSITY);
 
@@ -54,7 +55,7 @@ export class Galaxy {
         gaussianRandom(0, config.CORE_Y_DIST),
         gaussianRandom(0, config.GALAXY_THICKNESS)
       );
-      let star = new Star(pos, 'core');
+      let star = new LightingStar(pos, 'core');
       stars.push(star);
     }
 
@@ -64,7 +65,7 @@ export class Galaxy {
         gaussianRandom(0, config.OUTER_CORE_Y_DIST),
         gaussianRandom(0, config.GALAXY_THICKNESS)
       );
-      let star = new Star(pos, 'core');
+      let star = new LightingStar(pos, 'core');
       stars.push(star);
     }
 
@@ -75,7 +76,7 @@ export class Galaxy {
         gaussianRandom(0, config.BAR_WIDTH),
         gaussianRandom(0, config.GALAXY_THICKNESS)
       );
-      let star = new Star(pos, 'bar');
+      let star = new LightingStar(pos, 'bar');
       stars.push(star);
     }
 
@@ -88,7 +89,7 @@ export class Galaxy {
           (j * 2 * Math.PI) / config.ARMS,
           config.ARM_PITCH
         );
-        let star = new Star(pos, 'arms');
+        let star = new LightingStar(pos, 'arms');
         stars.push(star);
       }
     }
@@ -104,14 +105,13 @@ export class Galaxy {
         r * Math.sin(phi) * Math.sin(theta),
         r * Math.cos(phi)
       );
-      let star = new Star(pos, 'halo');
+      let star = new LightingStar(pos, 'halo');
       stars.push(star);
     }
 
     return stars;
   }
-
-
+  //FOR LIGHTING 
 
 
   generateHaze() {
