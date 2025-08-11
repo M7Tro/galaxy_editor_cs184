@@ -1,6 +1,6 @@
 import { config } from "./config/galaxyConfig.js";
 
-// Simple Perlin noise implementation
+// Simple Perlin noise for subtle variation
 function perlinNoise(x, y, scale, seed) {
   const rand = (seed) => {
     const value = Math.sin(seed * 127.1 + x * 11.3 + y * 7.7) * 43758.5453;
@@ -27,18 +27,32 @@ function perlinNoise(x, y, scale, seed) {
 
 export function generateSpiralArray(width, height) {
   const data = Array(height).fill().map(() => Array(width).fill(0));
-  const scale = 0.02 + Math.random() * 0.03; // Random scale for variation
   const seed = Math.random() * 1000; // Random seed for variation
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const maxRadius = Math.min(width, height) / 2;
+  const armCount = config.ARMS; // Use config for number of arms
+  const armPitch = config.ARM_PITCH; // Use config for spiral tightness
+
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const dx = x - width / 2;
-      const dy = y - height / 2;
+      const dx = x - centerX;
+      const dy = y - centerY;
       const radius = Math.sqrt(dx * dx + dy * dy);
-      const noise = perlinNoise(x, y, scale, seed);
-      // Combine noise with a slight radial falloff for galaxy-like structure
-      data[y][x] = Math.max(0, noise * Math.exp(-radius / (width / 2))) * (1 + Math.cos(Math.atan2(dy, dx) * config.ARMS) * 0.2);
+      const angle = Math.atan2(dy, dx);
+
+      // Logarithmic spiral for distinct arms
+      const spiralIntensity = Math.cos(angle * armCount + radius / armPitch);
+      // Radial falloff for galaxy-like structure
+      const falloff = Math.exp(-radius / maxRadius);
+      // Subtle noise for natural variation
+      const noise = perlinNoise(x, y, 0.05, seed) * 0.2;
+
+      // Combine for spiral arm intensity
+      data[y][x] = Math.max(0, (spiralIntensity + 1) / 2 * falloff + noise);
       data[y][x] = Math.min(1, Math.max(0, data[y][x])); // Clamp to [0, 1]
     }
   }
+
   return { data, width, height };
 }

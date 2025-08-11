@@ -32,7 +32,7 @@ function initThree() {
     0.1,
     5000000
   );
-  camera.position.set(0, 50, 50);
+  camera.position.set(0, 100, 100); // Adjusted from (0, 50, 50) to view larger galaxy
   camera.up.set(0, 0, 1);
   camera.lookAt(0, 0, 0);
 
@@ -207,6 +207,13 @@ function processCanvasInput(arrayData) {
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
 }
 
+function updateGalaxyParameters() {
+  // Use last canvas input if available, otherwise generate new random array
+  const regenData = lastCanvasArrayData || generateSpiralArray(100, 100);
+  galaxy.regenerate(regenData);
+  baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
+}
+
 initThree();
 let axes = new THREE.AxesHelper(5.0);
 scene.add(axes);
@@ -217,18 +224,18 @@ galaxy = new Galaxy(scene, arrayData);
 
 window.config = config;
 window.regenerateGalaxy = () => {
-  // Use last canvas input if available, otherwise generate new random array
-  const regenData = lastCanvasArrayData || generateSpiralArray(100, 100);
-  galaxy.regenerate(regenData);
+  arrayData = lastCanvasArrayData || generateSpiralArray(100, 100); // Always use new random array for default generation
+  galaxy.regenerate(arrayData);
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
 };
 
-window.generateStatic = () =>{
-  const regenData = generateSpiralArray(100, 100);
-  galaxy.regenerate(regenData);
+window.generateStatic = () => {
+  lastCanvasArrayData = generateSpiralArray(100, 100); // Always use new random array for default generation
+  galaxy.regenerate(lastCanvasArrayData);
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
 }
 
 window.processCanvasInput = processCanvasInput;
+window.updateGalaxyParameters = updateGalaxyParameters;
 
 requestAnimationFrame(render);
