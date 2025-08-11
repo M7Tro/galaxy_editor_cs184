@@ -102,7 +102,7 @@ export function initDrawCanvas() {
       if (drawCanvas && drawControls) {
         drawCanvas.classList.remove('active');
         drawControls.classList.remove('active');
-        document.getElementById('controls').style.display = 'block';
+        document.getElementById('controls').style.display = 'flex';
       }
     });
   }
