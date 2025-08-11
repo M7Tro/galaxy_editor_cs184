@@ -1,6 +1,6 @@
 import { config } from "./config/galaxyConfig.js";
 
-// Simple Perlin noise for subtle variation
+// Simple Perlin noise for variation
 function perlinNoise(x, y, scale, seed) {
   const rand = (seed) => {
     const value = Math.sin(seed * 127.1 + x * 11.3 + y * 7.7) * 43758.5453;
@@ -31,26 +31,61 @@ export function generateSpiralArray(width, height) {
   const centerX = width / 2;
   const centerY = height / 2;
   const maxRadius = Math.min(width, height) / 2;
-  const armCount = config.ARMS; // Use config for number of arms
-  const armPitch = config.ARM_PITCH; // Use config for spiral tightness
+
+  // Config parameters
+  const armCount = config.ARMS;
+  const armPitch = config.ARM_PITCH;
+  const spiral = config.SPIRAL;
+  const coreXDist = config.CORE_X_DIST / config.OUTER_CORE_X_DIST; // Normalize for array scale
+  const coreYDist = config.CORE_Y_DIST / config.OUTER_CORE_Y_DIST; // Normalize for array scale
+  const outerCoreXDist = config.OUTER_CORE_X_DIST / config.OUTER_CORE_X_DIST; // Scale factor
+  const outerCoreYDist = config.OUTER_CORE_Y_DIST / config.OUTER_CORE_Y_DIST; // Scale factor
+  const armXDist = config.ARM_X_DIST / config.OUTER_CORE_X_DIST;
+  const armYDist = config.ARM_Y_DIST / config.OUTER_CORE_Y_DIST;
+  const armXMean = config.ARM_X_MEAN / config.OUTER_CORE_X_DIST;
+  const armYMean = config.ARM_Y_MEAN / config.OUTER_CORE_Y_DIST;
+  const barLength = config.BAR_LENGTH / config.OUTER_CORE_X_DIST;
+  const barWidth = config.BAR_WIDTH / config.OUTER_CORE_Y_DIST;
+  const haloRadius = config.HALO_RADIUS / config.OUTER_CORE_X_DIST;
+  const haloDensity = config.HALO_DENSITY;
+  const nebulaDensity = config.NEBULA_DENSITY;
+  const nebulaScale = (config.NEBULA_SCALE_MIN + config.NEBULA_SCALE_MAX) / 2 / 10; // Normalize for noise
+  const starSizeVariance = config.STAR_SIZE_VARIANCE;
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const dx = x - centerX;
-      const dy = y - centerY;
-      const radius = Math.sqrt(dx * dx + dy * dy);
+      const dx = (x - centerX) / maxRadius;
+      const dy = (y - centerY) / maxRadius;
+      const radius = Math.sqrt(dx * dx * outerCoreXDist + dy * dy * outerCoreYDist);
       const angle = Math.atan2(dy, dx);
 
-      // Logarithmic spiral for distinct arms
-      const spiralIntensity = Math.cos(angle * armCount + radius / armPitch);
-      // Radial falloff for galaxy-like structure
-      const falloff = Math.exp(-radius / maxRadius);
-      // Subtle noise for natural variation
-      const noise = perlinNoise(x, y, 0.05, seed) * 0.2;
+      // Logarithmic spiral for arms
+      const armAngle = angle * armCount + radius * spiral / armPitch;
+      const spiralIntensity = Math.cos(armAngle) * Math.exp(-radius / (armXMean + armYMean));
+      const armInfluence = Math.exp(-(dx * dx) / (2 * armXDist * armXDist) - (dy * dy) / (2 * armYDist * armYDist));
 
-      // Combine for spiral arm intensity
-      data[y][x] = Math.max(0, (spiralIntensity + 1) / 2 * falloff + noise);
-      data[y][x] = Math.min(1, Math.max(0, data[y][x])); // Clamp to [0, 1]
+      // Core intensity
+      const coreInfluence = Math.exp(-(dx * dx) / (2 * coreXDist * coreXDist) - (dy * dy) / (2 * coreYDist * coreYDist));
+
+      // Bar intensity
+      const barInfluence = Math.abs(dx) < barLength / 2 && Math.abs(dy) < barWidth / 2 ? 1 : 0;
+
+      // Halo intensity
+      const haloInfluence = radius < haloRadius ? haloDensity * Math.exp(-radius / haloRadius) : 0;
+
+      // Noise for nebulae and star variation
+      const noise = perlinNoise(x, y, nebulaScale * 0.05, seed) * nebulaDensity * (1 + starSizeVariance);
+
+      // Combine intensities
+      let intensity = (
+        spiralIntensity * armInfluence * 0.4 + // Spiral arms
+        coreInfluence * 0.3 + // Central core
+        barInfluence * 0.2 + // Central bar
+        haloInfluence * 0.1 + // Halo
+        noise // Nebulae and star variation
+      );
+
+      data[y][x] = Math.min(1, Math.max(0, intensity)); // Clamp to [0, 1]
     }
   }
 

@@ -12,7 +12,7 @@ export function initDrawCanvas() {
       drawCanvas.height = window.innerHeight;
       ctx = drawCanvas.getContext('2d');
       if (ctx) {
-        ctx.globalAlpha = 0.7; // Set semi-transparent background
+        ctx.globalAlpha = 1.0; 
         ctx.fillStyle = 'rgb(255, 255, 255)';
         ctx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
         ctx.globalAlpha = 1.0; // Reset for drawing
