@@ -7,7 +7,7 @@ import { InvertShader } from "./shaders/InvertShader.js";
 import { RainbowCycleShader } from "./shaders/RainbowCycleShader.js";
 import { HeatmapShader } from "./shaders/HeatmapShader.js";
 import { BASE_LAYER, BLOOM_LAYER, BLOOM_PARAMS, OVERLAY_LAYER } from "./config/renderConfig.js";
-import { generateSpiralArray } from "./generateArray.js"; // New import
+import { generateSpiralArray } from "./generateArray.js";
 import { Galaxy } from "./galaxy.js";
 import { config } from "./config/galaxyConfig.js";
 
@@ -200,18 +200,45 @@ function renderPipeline() {
   baseComposer.render();
 }
 
+function processCanvasInput(drawCanvas) {
+  const ctx = drawCanvas.getContext('2d');
+  const width = 100; // Match generateArray.js dimensions
+  const height = 100;
+  const imageData = ctx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+  const data = Array(height).fill().map(() => Array(width).fill(0));
+
+  // Downsample canvas to 100x100 array
+  const scaleX = drawCanvas.width / width;
+  const scaleY = drawCanvas.height / height;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const px = Math.floor(x * scaleX);
+      const py = Math.floor(y * scaleY);
+      const index = (py * imageData.width + px) * 4;
+      // Use red channel (grayscale) and invert (black = high intensity)
+      data[y][x] = 1 - (imageData.data[index] / 255); // Invert: black (0) -> 1, white (255) -> 0
+    }
+  }
+
+  const arrayData = { data, width, height };
+  galaxy.regenerate(arrayData);
+}
+
 initThree();
 let axes = new THREE.AxesHelper(5.0);
 scene.add(axes);
 
-// Initialize galaxy with sample 2D array
-const arrayData = generateSpiralArray(100, 100); // 100x100 grid
+// Initialize galaxy with random 2D array
+let arrayData = generateSpiralArray(100, 100); // 100x100 grid
 galaxy = new Galaxy(scene, arrayData);
 
 window.config = config;
 window.regenerateGalaxy = () => {
-  galaxy.regenerate(arrayData); // Regenerate with 2D array
+  arrayData = generateSpiralArray(100, 100); // Regenerate new random array
+  galaxy.regenerate(arrayData); // Regenerate with new array
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
 };
+
+window.processCanvasInput = processCanvasInput;
 
 requestAnimationFrame(render);
