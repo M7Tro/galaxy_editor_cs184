@@ -9,8 +9,8 @@ export const config = {
   ARM_Y_DIST: 100, // Doubled from 50
   ARM_X_MEAN: 400, // Doubled from 200
   ARM_Y_MEAN: 200, // Doubled from 100
-  SPIRAL: 3.0,
-  ARMS: 2.0,
+  SPIRAL: 60.0,
+  ARMS: 5.0,
   BAR_LENGTH: 200, // Doubled from 100
   BAR_WIDTH: 40, // Doubled from 20
   HALO_RADIUS: 600, // Doubled from 300 to expand halo
