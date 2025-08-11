@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", (event) => {
-  const box = document.getElementById("controls-div");
+  const box = document.getElementById("controls"); // Updated to match index.html
   let hidden = 69;
 
   document.addEventListener("keydown", (event) => {
@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
         box.style.display = "none";
         hidden = 70;
       } else {
-        box.style.display = "flex";
+        box.style.display = "flex"; // Matches flex display in index.html
         hidden = 69;
       }
     }
@@ -46,13 +46,13 @@ document.addEventListener("DOMContentLoaded", (event) => {
         input.value = window.config[paramMap[id]];
         input.addEventListener('change', (e) => {
           window.config[paramMap[id]] = e.target.value;
-          if (window.regenerateGalaxy) window.regenerateGalaxy();
+          if (window.updateGalaxyParameters) window.updateGalaxyParameters();
         });
       } else {
         input.value = window.config[paramMap[id]];
         input.addEventListener('input', (e) => {
           window.config[paramMap[id]] = parseFloat(e.target.value);
-          if (window.regenerateGalaxy) window.regenerateGalaxy();
+          if (window.updateGalaxyParameters) window.updateGalaxyParameters();
         });
       }
     }
