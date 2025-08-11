@@ -36,16 +36,35 @@
     }
     #drawControls {
       position: absolute;
-      top: 10px;
-      right: 10px;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
       display: none;
     }
     #drawControls.active {
       display: block;
     }
     #drawControls button {
-      padding: 5px 10px;
+      padding: 10px 20px;
+      font-size: 18px;
+      margin: 0 5px;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
+    }
+    #drawControls #generateGalaxyButton {
+      background-color: #007bff;
+      color: white;
+    }
+    #drawControls #generateGalaxyButton:hover {
+      background-color: #0056b3;
+    }
+    #drawControls #clearCanvasButton {
+      background-color: #dc3545;
+      color: white;
+    }
+    #drawControls #clearCanvasButton:hover {
+      background-color: #b02a37;
     }
   </style>
 </head>
@@ -94,6 +113,7 @@
   <canvas id="drawCanvas"></canvas>
   <div id="drawControls">
     <button id="generateGalaxyButton">Generate Galaxy</button>
+    <button id="clearCanvasButton">Clear Canvas</button>
   </div>
   <script type="importmap">
     {

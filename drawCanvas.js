@@ -2,6 +2,7 @@ export function initDrawCanvas() {
   const drawCanvas = document.getElementById('drawCanvas');
   const drawControls = document.getElementById('drawControls');
   const generateButton = document.getElementById('generateGalaxyButton');
+  const clearButton = document.getElementById('clearCanvasButton');
   let ctx = null;
   let isDrawing = false;
 
@@ -11,7 +12,7 @@ export function initDrawCanvas() {
       drawCanvas.height = window.innerHeight;
       ctx = drawCanvas.getContext('2d');
       if (ctx) {
-        ctx.globalAlpha = 0.7; // Set semi-transparent background
+        ctx.globalAlpha = 1.0; // Set semi-transparent background
         ctx.fillStyle = 'rgb(255, 255, 255)';
         ctx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
         ctx.globalAlpha = 1.0; // Reset for drawing
@@ -24,26 +25,43 @@ export function initDrawCanvas() {
 
   function processCanvas() {
     if (!ctx) return;
-    const width = 100; // Match generateArray.js dimensions
-    const height = 100;
+    const width = 200; // Match resolution for detail
+    const height = 200;
     const imageData = ctx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
     const data = Array(height).fill().map(() => Array(width).fill(0));
 
-    // Downsample canvas to 100x100 array
+    // Downsample canvas to 200x200 array with averaging
     const scaleX = drawCanvas.width / width;
     const scaleY = drawCanvas.height / height;
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        const px = Math.floor(x * scaleX);
-        const py = Math.floor(y * scaleY);
-        const index = (py * imageData.width + px) * 4;
-        // Use red channel (grayscale) and invert (black = high intensity)
-        data[y][x] = 1 - (imageData.data[index] / 255); // Invert: black (0) -> 1, white (255) -> 0
+        let sum = 0;
+        let count = 0;
+        // Average pixels in each grid cell
+        for (let dy = 0; dy < scaleY; dy++) {
+          for (let dx = 0; dx < scaleX; dx++) {
+            const px = Math.floor((width - 1 - x) * scaleX + dx); // Reverse x to fix mirroring
+            const py = Math.floor(y * scaleY + dy);
+            if (px >= 0 && px < drawCanvas.width && py >= 0 && py < drawCanvas.height) {
+              const index = (py * imageData.width + px) * 4;
+              sum += 1 - (imageData.data[index] / 255); // Invert: black (0) -> 1, white (255) -> 0
+              count++;
+            }
+          }
+        }
+        data[y][x] = count > 0 ? sum / count : 0; // Average intensity
       }
     }
 
     const arrayData = { data, width, height };
     window.processCanvasInput(arrayData);
+  }
+
+  function clearCanvas() {
+    if (ctx) {
+      ctx.fillStyle = 'rgba(255, 255, 255, 1.0 )';
+      ctx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);  
+    }
   }
 
   if (drawCanvas) {
@@ -86,5 +104,9 @@ export function initDrawCanvas() {
         document.getElementById('controls').style.display = 'block';
       }
     });
+  }
+
+  if (clearButton) {
+    clearButton.addEventListener('click', clearCanvas);
   }
 }
