@@ -1,82 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Procedural Galaxy</title>
-  <link rel="stylesheet" href="main.css">
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.167.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.167.0/examples/jsm/"
-      }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Galaxy Simulation</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #canvas { display: block; }
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
     }
-  </script>
+    #controls button {
+      margin-top: 10px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    #drawCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
-  <div id="controls-div">
+  <div id="controls">
     <h2>Controls</h2>
     <p>Left hold -> Move Camera</p>
     <p>Right hold -> Pan Camera</p>
     <p>Scroll Wheel -> Zoom in/out</p>
     <p>M -> Toggle GUI</p>
     <button onclick="regenerateGalaxy()">Regenerate Galaxy</button>
-    <div class="param-controls" style="overflow-y: auto; max-height: 300px; display: flex; flex-direction: column;">
-      <label for="num_stars">NUM_STARS:</label>
-      <input type="number" id="num_stars" min="100" max="10000" step="100">
-      <label for="galaxy_thickness">GALAXY_THICKNESS:</label>
-      <input type="number" id="galaxy_thickness" min="1" max="50" step="1">
-      <label for="core_x_dist">CORE_X_DIST:</label>
-      <input type="number" id="core_x_dist" min="1" max="500" step="1">
-      <label for="core_y_dist">CORE_Y_DIST:</label>
-      <input type="number" id="core_y_dist" min="1" max="500" step="1">
-      <label for="outer_core_x_dist">OUTER_CORE_X_DIST:</label>
-      <input type="number" id="outer_core_x_dist" min="1" max="1000" step="1">
-      <label for="outer_core_y_dist">OUTER_CORE_Y_DIST:</label>
-      <input type="number" id="outer_core_y_dist" min="1" max="1000" step="1">
-      <label for="arm_x_dist">ARM_X_DIST:</label>
-      <input type="number" id="arm_x_dist" min="1" max="500" step="1">
-      <label for="arm_y_dist">ARM_Y_DIST:</label>
-      <input type="number" id="arm_y_dist" min="1" max="500" step="1">
-      <label for="arm_x_mean">ARM_X_MEAN:</label>
-      <input type="number" id="arm_x_mean" min="1" max="500" step="1">
-      <label for="arm_y_mean">ARM_Y_MEAN:</label>
-      <input type="number" id="arm_y_mean" min="1" max="500" step="1">
-      <label for="spiral">SPIRAL:</label>
-      <input type="number" id="spiral" min="0.1" max="10" step="0.1">
-      <label for="arms">ARMS:</label>
-      <input type="number" id="arms" min="1" max="10" step="1">
-      <label for="bar_length">BAR_LENGTH:</label>
-      <input type="number" id="bar_length" min="1" max="500" step="1">
-      <label for="bar_width">BAR_WIDTH:</label>
-      <input type="number" id="bar_width" min="1" max="100" step="1">
-      <label for="halo_radius">HALO_RADIUS:</label>
-      <input type="number" id="halo_radius" min="1" max="1000" step="1">
-      <label for="halo_density">HALO_DENSITY:</label>
-      <input type="number" id="halo_density" min="0" max="1" step="0.01">
-      <label for="arm_pitch">ARM_PITCH:</label>
-      <input type="number" id="arm_pitch" min="0.1" max="10" step="0.1">
-      <label for="star_size_variance">STAR_SIZE_VARIANCE:</label>
-      <input type="number" id="star_size_variance" min="0" max="1" step="0.01">
-      <label for="nebula_density">NEBULA_DENSITY:</label>
-      <input type="number" id="nebula_density" min="0" max="0.2" step="0.01">
-      <label for="nebula_scale_min">NEBULA_SCALE_MIN:</label>
-      <input type="number" id="nebula_scale_min" min="1" max="20" step="1">
-      <label for="nebula_scale_max">NEBULA_SCALE_MAX:</label>
-      <input type="number" id="nebula_scale_max" min="5" max="50" step="1">
-      <label for="shader_type">SHADER_TYPE:</label>
-      <select id="shader_type">
+    <button onclick="showDrawCanvas()">Draw Galaxy</button>
+    <h3>Config</h3>
+    <label>NUM_STARS: <input type="number" id="NUM_STARS" value="3500" /></label><br />
+    <label>GALAXY_THICKNESS: <input type="number" id="GALAXY_THICKNESS" value="5" /></label><br />
+    <label>CORE_X_DIST: <input type="number" id="CORE_X_DIST" value="33" /></label><br />
+    <label>CORE_Y_DIST: <input type="number" id="CORE_Y_DIST" value="33" /></label><br />
+    <label>OUTER_CORE_X_DIST: <input type="number" id="OUTER_CORE_X_DIST" value="169" /></label><br />
+    <label>OUTER_CORE_Y_DIST: <input type="number" id="OUTER_CORE_Y_DIST" value="169" /></label><br />
+    <label>ARM_X_DIST: <input type="number" id="ARM_X_DIST" value="100" /></label><br />
+    <label>ARM_Y_DIST: <input type="number" id="ARM_Y_DIST" value="50" /></label><br />
+    <label>ARM_X_MEAN: <input type="number" id="ARM_X_MEAN" value="200" /></label><br />
+    <label>ARM_Y_MEAN: <input type="number" id="ARM_Y_MEAN" value="100" /></label><br />
+    <label>SPIRAL: <input type="number" id="SPIRAL" value="3.0" /></label><br />
+    <label>ARMS: <input type="number" id="ARMS" value="2.0" /></label><br />
+    <label>BAR_LENGTH: <input type="number" id="BAR_LENGTH" value="100" /></label><br />
+    <label>BAR_WIDTH: <input type="number" id="BAR_WIDTH" value="20" /></label><br />
+    <label>HALO_RADIUS: <input type="number" id="HALO_RADIUS" value="300" /></label><br />
+    <label>HALO_DENSITY: <input type="number" id="HALO_DENSITY" value="0.1" step="0.01" /></label><br />
+    <label>ARM_PITCH: <input type="number" id="ARM_PITCH" value="3.0" /></label><br />
+    <label>STAR_SIZE_VARIANCE: <input type="number" id="STAR_SIZE_VARIANCE" value="0.3" step="0.01" /></label><br />
+    <label>NEBULA_DENSITY: <input type="number" id="NEBULA_DENSITY" value="0.05" step="0.01" /></label><br />
+    <label>NEBULA_SCALE_MIN: <input type="number" id="NEBULA_SCALE_MIN" value="5" /></label><br />
+    <label>NEBULA_SCALE_MAX: <input type="number" id="NEBULA_SCALE_MAX" value="15" /></label><br />
+    <label>SHADER_TYPE: 
+      <select id="SHADER_TYPE">
         <option value="composition">Composition (Default)</option>
         <option value="blackwhite">Black & White</option>
         <option value="invert">Invert (Fun)</option>
         <option value="rainbowcycle">Rainbow Cycle</option>
         <option value="heatmap">Heatmap</option>
       </select>
-    </div>
+    </label>
   </div>
+  <canvas id="drawCanvas"></canvas>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.168.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module">
+    import { config } from './config/galaxyConfig.js';
+
+    // Toggle controls visibility with 'M' key
+    document.addEventListener('keydown', (event) => {
+      if (event.key.toLowerCase() === 'm') {
+        const controls = document.getElementById('controls');
+        controls.style.display = controls.style.display === 'none' ? 'block' : 'none';
+      }
+    });
+
+    // Update config and regenerate galaxy on input change
+    const inputs = document.querySelectorAll('#controls input, #controls select');
+    inputs.forEach(input => {
+      input.addEventListener('change', () => {
+        const key = input.id;
+        const value = input.type === 'number' ? parseFloat(input.value) : input.value;
+        config[key] = value;
+        window.regenerateGalaxy();
+      });
+    });
+
+    // Drawing canvas functionality
+    const drawCanvas = document.getElementById('drawCanvas');
+    let ctx = null;
+    let isDrawing = false;
+
+    function initDrawCanvas() {
+      if (drawCanvas) {
+        drawCanvas.width = window.innerWidth;
+        drawCanvas.height = window.innerHeight;
+        ctx = drawCanvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+          ctx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = 5;
+          ctx.lineCap = 'round';
+        }
+      }
+    }
+
+    window.showDrawCanvas = () => {
+      drawCanvas.style.display = 'block';
+      document.getElementById('controls').style.display = 'none';
+      initDrawCanvas();
+    };
+
+    if (drawCanvas) {
+      drawCanvas.addEventListener('mousedown', (e) => {
+        if (ctx) {
+          isDrawing = true;
+          ctx.beginPath();
+          ctx.moveTo(e.clientX, e.clientY);
+        }
+      });
+
+      drawCanvas.addEventListener('mousemove', (e) => {
+        if (isDrawing && ctx) {
+          ctx.lineTo(e.clientX, e.clientY);
+          ctx.stroke();
+        }
+      });
+
+      drawCanvas.addEventListener('mouseup', () => {
+        isDrawing = false;
+        if (ctx) ctx.closePath();
+      });
+
+      drawCanvas.addEventListener('mouseout', () => {
+        isDrawing = false;
+        if (ctx) ctx.closePath();
+      });
+
+      window.addEventListener('resize', initDrawCanvas);
+    }
+  </script>
   <script type="module" src="main.js"></script>
-  <script src="index.js"></script>
 </body>
 </html>
