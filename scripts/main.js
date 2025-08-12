@@ -18,11 +18,12 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { LightingGalaxy } from "./LightingGalaxy.js";
+import { starTypes } from "../config/starDis.js";
+import { materials } from "./star.js";
 
 let canvas, renderer, camera, scene, orbit, baseComposer, bloomComposer, overlayComposer, shaderPasses, galaxy;
-let lastCanvasArrayData = null; // Store last canvas input
+let lastCanvasArrayData = null;
 
-//From Ryan:
 function clearScene(scene) {
   scene.traverse((object) => {
     if (object.geometry) object.geometry.dispose();
@@ -42,7 +43,6 @@ function clearScene(scene) {
 
   THREE.Cache.clear();
 }
-//
 
 function initThree() {
   canvas = document.querySelector("#canvas");
@@ -55,7 +55,7 @@ function initThree() {
     0.1,
     5000000
   );
-  camera.position.set(0, 100, 100); // Adjusted from (0, 50, 50) to view larger galaxy
+  camera.position.set(0, 100, 100);
   camera.up.set(0, 0, 1);
   camera.lookAt(0, 0, 0);
 
@@ -203,7 +203,6 @@ async function render() {
 
   galaxy.updateScale(camera);
 
-  // Update time for rainbowcycle if active
   if (config.SHADER_TYPE === 'rainbowcycle') {
     shaderPasses['rainbowcycle'].material.uniforms.time.value = performance.now() * 0.001;
   }
@@ -225,13 +224,12 @@ function renderPipeline() {
 }
 
 function processCanvasInput(arrayData) {
-  lastCanvasArrayData = arrayData; // Store canvas input
+  lastCanvasArrayData = arrayData;
   galaxy.regenerate(arrayData);
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
 }
 
 function updateGalaxyParameters() {
-  // Use last canvas input if available, otherwise generate new random array
   const regenData = lastCanvasArrayData || generateSpiralArray(100, 100);
   galaxy.regenerate(regenData);
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
@@ -241,70 +239,185 @@ initThree();
 let axes = new THREE.AxesHelper(5.0);
 scene.add(axes);
 
-// Initialize galaxy with random 2D array
-let arrayData = generateSpiralArray(100, 100); // 100x100 grid
+let arrayData = generateSpiralArray(100, 100);
 galaxy = new Galaxy(scene, arrayData);
 
 window.config = config;
 window.regenerateGalaxy = () => {
-  arrayData = lastCanvasArrayData || generateSpiralArray(100, 100); // Always use new random array for default generation
+  arrayData = lastCanvasArrayData || generateSpiralArray(100, 100);
   galaxy.regenerate(arrayData);
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
 };
 
 window.generateStatic = () => {
-  //From Ryan
   clearScene(scene);
-  galaxy = new Galaxy(scene, arrayData); //CHANGE BACK LATER
-  //
-  lastCanvasArrayData = generateSpiralArray(100, 100); // Always use new random array for default generation
+  galaxy = new Galaxy(scene, arrayData);
+  lastCanvasArrayData = generateSpiralArray(100, 100);
   galaxy.regenerate(lastCanvasArrayData);
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
 }
 
-//From Ryan:
 window.generateLight = () => {
   clearScene(scene);
-  lastCanvasArrayData = generateSpiralArray(100, 100); // Always use new random array for default generation
+  lastCanvasArrayData = generateSpiralArray(100, 100);
   galaxy = new LightingGalaxy(scene, lastCanvasArrayData);
   galaxy.regenerate(lastCanvasArrayData);
 
-      // Add real lights BY ME
-
   for(let i = 0; i < config.NUM_POINT_LIGHTS; i++){
-      const sign_x =  Math.random() < 0.5 ? 1 : -1;
-      const sign_y =  Math.random() < 0.5 ? 1 : -1;
+    const sign_x =  Math.random() < 0.5 ? 1 : -1;
+    const sign_y =  Math.random() < 0.5 ? 1 : -1;
 
-      const pointLight = new THREE.PointLight(0xffffff, config.POINT_LIGHT_INTESITY, 0);
-      pointLight.position.set((Math.random() * config.OUTER_CORE_X_DIST) * sign_x, 
-                              (Math.random() * config.OUTER_CORE_Y_DIST) * sign_y, 
-                              0);
+    const pointLight = new THREE.PointLight(0xffffff, config.POINT_LIGHT_INTESITY, 0);
+    pointLight.position.set((Math.random() * config.OUTER_CORE_X_DIST) * sign_x, 
+                            (Math.random() * config.OUTER_CORE_Y_DIST) * sign_y, 
+                            0);
 
-      const pointLightHelper = new THREE.PointLightHelper(pointLight, 1); //Add point light visualizer
-      scene.add(pointLightHelper);
-      
-      
-      scene.add(pointLight); //Add point light
+    const pointLightHelper = new THREE.PointLightHelper(pointLight, 1);
+    scene.add(pointLightHelper);
+    
+    
+    scene.add(pointLight);
   }
-    //Directional Light
-  // const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
-  // directionalLight.position.set(10, 10, 10);
-  // scene.add(directionalLight);
-  // UnrealBloomPass.enabled = false;
 
-  //Hemisphere light
-  //const hemi = new THREE.HemisphereLight(0x88aaff, 0x7fc201, config.HEMISPHERE_LIGHT_INTENSITY);
   const hemi = new THREE.HemisphereLight(0x88aaff, 0x000011, config.HEMISPHERE_LIGHT_INTENSITY);
   scene.add(hemi);
-
 
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
 
 }
-//
-
 
 window.processCanvasInput = processCanvasInput;
 window.updateGalaxyParameters = updateGalaxyParameters;
 
 requestAnimationFrame(render);
+
+// Vector helpers
+function vecAdd(a, b) { return {x: a.x + b.x, y: a.y + b.y, z: a.z + b.z}; }
+function vecSubtract(a, b) { return {x: a.x - b.x, y: a.y - b.y, z: a.z - b.z}; }
+function vecScale(v, s) { return {x: v.x * s, y: v.y * s, z: v.z * s}; }
+function vecDot(a, b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+function vecNormalize(v) {
+  const len = Math.sqrt(vecDot(v, v));
+  return len > 0 ? {x: v.x / len, y: v.y / len, z: v.z / len} : v;
+}
+function vecCross(a, b) {
+  return { 
+    x: a.y * b.z - a.z * b.y,
+    y: a.z * b.x - a.x * b.z,
+    z: a.x * b.y - a.y * b.x 
+  };
+}
+
+// Ray-sphere intersection
+function intersectRaySphere(rayOrigin, rayDir, sphere) {
+  let oc = vecSubtract(rayOrigin, sphere.center);
+  let a = vecDot(rayDir, rayDir);
+  let b = 2 * vecDot(oc, rayDir);
+  let c = vecDot(oc, oc) - sphere.radius * sphere.radius;
+  let disc = b * b - 4 * a * c;
+  if (disc < 0) return Infinity;
+  let sqrtDisc = Math.sqrt(disc);
+  let t1 = (-b + sqrtDisc) / (2 * a);
+  let t2 = (-b - sqrtDisc) / (2 * a);
+  let t = Math.min(t1, t2);
+  return t > 0 ? t : Infinity;
+}
+
+// Compute lighting
+function computeLighting(hit, normal, baseColor, lights) {
+  let intensity = 0.2;
+  for (let light of lights) {
+    let lightDir = vecNormalize(vecSubtract(light.pos, hit));
+    intensity += Math.max(0, vecDot(normal, lightDir)) * light.intensity;
+  }
+  intensity = Math.min(intensity, 1);
+  return {
+    r: Math.floor(baseColor.r * intensity),
+    g: Math.floor(baseColor.g * intensity),
+    b: Math.floor(baseColor.b * intensity)
+  };
+}
+
+// Trace ray
+function trace(rayOrigin, rayDir, spheres, lights, depth = 0) {
+  if (depth > 2) return {r: 235, g: 226, b: 219};
+  let closestT = Infinity, closestSphere = null;
+  for (let sphere of spheres) {
+    let t = intersectRaySphere(rayOrigin, rayDir, sphere);
+    if (t < closestT) {
+      closestT = t;
+      closestSphere = sphere;
+    }
+  }
+  if (!closestSphere) return {r: 235, g: 226, b: 219}; // Fog background
+  let hitPoint = vecAdd(rayOrigin, vecScale(rayDir, closestT));
+  let normal = vecNormalize(vecSubtract(hitPoint, closestSphere.center));
+  return computeLighting(hitPoint, normal, closestSphere.color, lights);
+}
+
+window.renderRaytracePNG = () => {
+  let spheres = [];
+  galaxy.stars.forEach(star => { // Full for step 5; reduce if slow
+    let col = materials[star.starType].color.getStyle().match(/\d+/g).map(Number);
+    spheres.push({
+      center: {x: star.position.x, y: star.position.y, z: star.position.z},
+      radius: starTypes.size[star.starType] * star.sizeFactor / 2,
+      color: {r: col[0], g: col[1], b: col[2]}
+    });
+  });
+  galaxy.nebulae.forEach(nebula => {
+    let col = nebula.obj.material.color.getStyle().match(/\d+/g).map(Number);
+    spheres.push({
+      center: {x: nebula.position.x, y: nebula.position.y, z: nebula.position.z},
+      radius: nebula.obj.scale.x / 2,
+      color: {r: col[0], g: col[1], b: col[2]}
+    });
+  });
+  galaxy.haze.forEach(haze => {
+    spheres.push({
+      center: {x: haze.position.x, y: haze.position.y, z: haze.position.z},
+      radius: 0.1,
+      color: {r: 255, g: 255, b: 255}
+    });
+  });
+  let lights = [];
+  scene.traverse(obj => {
+    if (obj instanceof THREE.PointLight) {
+      lights.push({pos: {x: obj.position.x, y: obj.position.y, z: obj.position.z}, intensity: obj.intensity});
+    } else if (obj instanceof THREE.HemisphereLight) {
+      lights.push({pos: {x: 0, y: 0, z: 10000}, intensity: obj.intensity / 2});
+      lights.push({pos: {x: 0, y: 0, z: -10000}, intensity: obj.intensity / 2});
+    }
+  });
+  let camPos = {x: camera.position.x, y: camera.position.y, z: camera.position.z};
+  let forward = vecNormalize(vecSubtract({x:0,y:0,z:0}, camPos));
+  let up = {x: camera.up.x, y: camera.up.y, z: camera.up.z};
+  let right = vecNormalize(vecCross(forward, up));
+  let local_up = vecNormalize(vecCross(right, forward));
+  let fovScale = Math.tan(camera.fov * Math.PI / 360);
+  const width = 512, height = 512;
+  const cvs = document.createElement('canvas');
+  cvs.width = width;
+  cvs.height = height;
+  const ctx = cvs.getContext('2d');
+  const imageData = ctx.createImageData(width, height);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      let u = (x / width - 0.5) * camera.aspect;
+      let v = 0.5 - (y / height);
+      let rayDir = vecNormalize(vecAdd(vecAdd(vecScale(forward, 1), vecScale(right, u * fovScale)), vecScale(local_up, v * fovScale)));
+      let color = trace(camPos, rayDir, spheres, lights);
+      let idx = (y * width + x) * 4;
+      imageData.data[idx] = color.r;
+      imageData.data[idx + 1] = color.g;
+      imageData.data[idx + 2] = color.b;
+      imageData.data[idx + 3] = 255;
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+  const url = cvs.toDataURL('image/png');
+  const link = document.createElement('a');
+  link.download = 'raytrace-galaxy.png';
+  link.href = url;
+  link.click();
+};

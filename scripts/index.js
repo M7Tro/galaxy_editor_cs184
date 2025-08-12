@@ -142,3 +142,7 @@ if (localStorage.getItem("runFunction") === "true") {
   processCanvas();
   localStorage.removeItem("runFunction");
 }
+
+document.getElementById('renderRaytrace').addEventListener('click', () => {
+  window.renderRaytracePNG();
+});

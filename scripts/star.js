@@ -10,6 +10,9 @@ const materials = starTypes.color.map(
   (color) => new THREE.SpriteMaterial({ map: texture, color: color })
 );
 
+// In star.js, after defining materials:
+export { materials };
+
 export class Star {
   constructor(position, region = 'arms') {
     this.position = position;
