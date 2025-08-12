@@ -325,12 +325,13 @@ function intersectRaySphere(rayOrigin, rayDir, sphere) {
 
 // Compute lighting
 function computeLighting(hit, normal, baseColor, lights) {
-  let intensity = 0.2;
+  let intensity = 0.5;
   for (let light of lights) {
     let lightDir = vecNormalize(vecSubtract(light.pos, hit));
-    intensity += Math.max(0, vecDot(normal, lightDir)) * light.intensity;
+    intensity += Math.max(0, vecDot(normal, lightDir)) * light.intensity * 2;
   }
-  intensity = Math.min(intensity, 1);
+  intensity += 1; // Emissive
+  intensity = Math.min(intensity, 3);
   return {
     r: Math.floor(baseColor.r * intensity),
     g: Math.floor(baseColor.g * intensity),
@@ -340,7 +341,7 @@ function computeLighting(hit, normal, baseColor, lights) {
 
 // Trace ray
 function trace(rayOrigin, rayDir, spheres, lights, depth = 0) {
-  if (depth > 2) return {r: 235, g: 226, b: 219};
+  if (depth > 2) return {r: 0, g: 0, b: 0};
   let closestT = Infinity, closestSphere = null;
   for (let sphere of spheres) {
     let t = intersectRaySphere(rayOrigin, rayDir, sphere);
@@ -349,15 +350,16 @@ function trace(rayOrigin, rayDir, spheres, lights, depth = 0) {
       closestSphere = sphere;
     }
   }
-  if (!closestSphere) return {r: 235, g: 226, b: 219}; // Fog background
+  if (!closestSphere) return {r: 0, g: 0, b: 0}; // Black background
   let hitPoint = vecAdd(rayOrigin, vecScale(rayDir, closestT));
   let normal = vecNormalize(vecSubtract(hitPoint, closestSphere.center));
   return computeLighting(hitPoint, normal, closestSphere.color, lights);
 }
 
 window.renderRaytracePNG = () => {
+  document.getElementById('renderProgress').textContent = '0% complete';
   let spheres = [];
-  galaxy.stars.forEach(star => { // Full for step 5; reduce if slow
+  galaxy.stars.forEach(star => {
     let col = materials[star.starType].color.getStyle().match(/\d+/g).map(Number);
     spheres.push({
       center: {x: star.position.x, y: star.position.y, z: star.position.z},
@@ -395,15 +397,17 @@ window.renderRaytracePNG = () => {
   let right = vecNormalize(vecCross(forward, up));
   let local_up = vecNormalize(vecCross(right, forward));
   let fovScale = Math.tan(camera.fov * Math.PI / 360);
-  const width = 512, height = 512;
+  const width = window.innerWidth, height = window.innerHeight;
+  let aspect = width / height;
   const cvs = document.createElement('canvas');
   cvs.width = width;
   cvs.height = height;
   const ctx = cvs.getContext('2d');
   const imageData = ctx.createImageData(width, height);
-  for (let y = 0; y < height; y++) {
+  let y = 0;
+  function renderRow() {
     for (let x = 0; x < width; x++) {
-      let u = (x / width - 0.5) * camera.aspect;
+      let u = (x / width - 0.5) * aspect;
       let v = 0.5 - (y / height);
       let rayDir = vecNormalize(vecAdd(vecAdd(vecScale(forward, 1), vecScale(right, u * fovScale)), vecScale(local_up, v * fovScale)));
       let color = trace(camPos, rayDir, spheres, lights);
@@ -413,11 +417,19 @@ window.renderRaytracePNG = () => {
       imageData.data[idx + 2] = color.b;
       imageData.data[idx + 3] = 255;
     }
+    document.getElementById('renderProgress').textContent = `${Math.floor((y + 1) / height * 100)}% complete`;
+    y++;
+    if (y < height) {
+      setTimeout(renderRow, 0);
+    } else {
+      ctx.putImageData(imageData, 0, 0);
+      const url = cvs.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = 'raytrace-galaxy.png';
+      link.href = url;
+      link.click();
+      document.getElementById('renderProgress').textContent = 'Render complete';
+    }
   }
-  ctx.putImageData(imageData, 0, 0);
-  const url = cvs.toDataURL('image/png');
-  const link = document.createElement('a');
-  link.download = 'raytrace-galaxy.png';
-  link.href = url;
-  link.click();
+  renderRow();
 };
