@@ -327,14 +327,15 @@ function intersectRaySphere(rayOrigin, rayDir, sphere) {
 //Compute Lighting
 function computeLighting(hitPoint, normal, baseColor, lights) {
   let finalColor = { r: 0, g: 0, b: 0 };
-  const ambient = 0.5; 
-  const specularStrength = 0.9; 
-  const shininess = 32;
+  const ambient = 0.6; // Increased for nebulae visibility
+  const specularStrength = 0.9; // Consistent for glow
+  const shininess = 32; // Sharp specular highlights
+  const nebulaBoost = baseColor.r === 255 && baseColor.g === 0 && baseColor.b === 255 ? 1.5 : 1.0; // Boost magenta nebulae in core
 
   // Add ambient contribution
-  finalColor.r += baseColor.r * ambient;
-  finalColor.g += baseColor.g * ambient;
-  finalColor.b += baseColor.b * ambient;
+  finalColor.r += baseColor.r * ambient * nebulaBoost;
+  finalColor.g += baseColor.g * ambient * nebulaBoost;
+  finalColor.b += baseColor.b * ambient * nebulaBoost;
 
   // Process each light
   for (let light of lights) {
@@ -342,22 +343,22 @@ function computeLighting(hitPoint, normal, baseColor, lights) {
     let diffuse = Math.max(vecDot(normal, lightDir), 0.0) * light.intensity;
 
     // Diffuse contribution
-    finalColor.r += baseColor.r * diffuse * 0.9; // Increased diffuse for brighter surfaces
-    finalColor.g += baseColor.g * diffuse * 0.9;
-    finalColor.b += baseColor.b * diffuse * 0.9;
+    finalColor.r += baseColor.r * diffuse * 0.9 * nebulaBoost;
+    finalColor.g += baseColor.g * diffuse * 0.9 * nebulaBoost;
+    finalColor.b += baseColor.b * diffuse * 0.9 * nebulaBoost;
 
     // Specular contribution for glow effect
     let viewDir = vecNormalize(vecSubtract(camera.position, hitPoint));
     let reflectDir = vecNormalize(vecSubtract(vecScale(normal, 2 * vecDot(normal, lightDir)), lightDir));
     let specular = Math.pow(Math.max(vecDot(viewDir, reflectDir), 0.0), shininess) * specularStrength * light.intensity;
     
-    finalColor.r += specular * 255; // Maintain specular for bright highlights
-    finalColor.g += specular * 255;
-    finalColor.b += specular * 255;
+    finalColor.r += specular * 255 * nebulaBoost;
+    finalColor.g += specular * 255 * nebulaBoost;
+    finalColor.b += specular * 255 * nebulaBoost;
   }
 
   // Clamp colors to [0, 255] and enhance brightness
-  finalColor.r = Math.min(finalColor.r * 1.5, 255); // Increased boost for brighter stars
+  finalColor.r = Math.min(finalColor.r * 1.5, 255);
   finalColor.g = Math.min(finalColor.g * 1.5, 255);
   finalColor.b = Math.min(finalColor.b * 1.5, 255);
 
@@ -505,7 +506,7 @@ function intersectBVH(rayOrigin, rayDir, node) {
 function trace(rayOrigin, rayDir, bvhRoot, lights, depth = 0) {
   if (depth > 2) return { r: 0, g: 0, b: 0 };
   let hit = intersectBVH(rayOrigin, rayDir, bvhRoot);
-  if (hit.t === Infinity) return { r: 10, g: 10, b: 20 }; // Subtle background color
+  if (hit.t === Infinity) return { r: 25, g: 25, b: 35 }; // Slightly brighter background
   let closestSphere = hit.sphere;
   let closestT = hit.t;
   let hitPoint = vecAdd(rayOrigin, vecScale(rayDir, closestT));
@@ -525,21 +526,21 @@ window.renderRaytracePNG = () => {
     });
   });
   galaxy.nebulae.forEach(nebula => {
-    let col = nebula.obj.material.color.getStyle().match(/\d+/g).map(Number);
-    spheres.push({
-      center: {x: nebula.position.x, y: nebula.position.y, z: nebula.position.z},
-      radius: nebula.obj.scale.x / 2,
-      color: {r: col[0], g: col[1], b: col[2]}
-    });
-  });
-  galaxy.haze.forEach(haze => {
-  let col = haze.obj.material.color.getStyle().match(/\d+/g).map(Number);
+  let col = nebula.obj.material.color.getStyle().match(/\d+/g).map(Number);
   spheres.push({
-    center: { x: haze.position.x, y: haze.position.y, z: haze.position.z },
-    radius: 0.1,
+    center: { x: nebula.position.x, y: nebula.position.y, z: nebula.position.z },
+    radius: nebula.obj.scale.x / 2,
     color: { r: col[0], g: col[1], b: col[2] }
   });
-});
+  });
+  galaxy.haze.forEach(haze => {
+    let col = haze.obj.material.color.getStyle().match(/\d+/g).map(Number);
+    spheres.push({
+      center: { x: haze.position.x, y: haze.position.y, z: haze.position.z },
+      radius: 0.1,
+      color: { r: col[0], g: col[1], b: col[2] }
+    });
+  });
   let bvhRoot = buildBVH(spheres);
   let lights = [];
   scene.traverse(obj => {
