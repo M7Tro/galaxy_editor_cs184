@@ -22,6 +22,26 @@ import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 let canvas, renderer, camera, scene, orbit, baseComposer, bloomComposer, overlayComposer, shaderPasses, galaxy;
 let lastCanvasArrayData = null; // Store last canvas input
 
+function clearScene(scene) {
+  scene.traverse((object) => {
+    if (object.geometry) object.geometry.dispose();
+
+    if (object.material) {
+      if (Array.isArray(object.material)) {
+        object.material.forEach((m) => m.dispose());
+      } else {
+        object.material.dispose();
+      }
+    }
+  });
+
+  while (scene.children.length > 0) {
+    scene.remove(scene.children[0]);
+  }
+
+  THREE.Cache.clear();
+}
+
 function initThree() {
   canvas = document.querySelector("#canvas");
   scene = new THREE.Scene();
@@ -45,8 +65,6 @@ function initThree() {
   orbit.maxDistance = 16384;
   orbit.maxPolarAngle = Math.PI / 2 - Math.PI / 360;
 
-    // Add real lights BY ME
-
   //Point Light
   // const pointLight = new THREE.PointLight(0xffffff, 1000, 0);
   // const pointLight1 = new THREE.PointLight(0xffffff, 1000, 0);
@@ -54,12 +72,12 @@ function initThree() {
 
 
 
-  // // Position the light in your scene
-  // pointLight.position.set(150, 150, 0);
+  // Position the light in your scene
+  // pointLight.position.set(330, 330, 0);
   // pointLight1.position.set(20, 20, 20);
   // pointLight2.position.set(50, 50, 0);
 
-  // // Optionally add a helper to visualize the light position
+  // Optionally add a helper to visualize the light position
   // const pointLightHelper = new THREE.PointLightHelper(pointLight, 1);
   // scene.add(pointLightHelper);
   
@@ -74,19 +92,9 @@ function initThree() {
   // scene.add(pointLight1);
   // scene.add(pointLight2);
 
-  // //Ambient Light
-  // // const ambientLight = new THREE.AmbientLight(0x404040, 0.7);
-  // // scene.add(ambientLight);
-
-  // // //Directional Light
-  // const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
-  // directionalLight.position.set(10, 10, 10);
-  // scene.add(directionalLight);
-  // UnrealBloomPass.enabled = false;
-
-  // //Hemisphere light
-  // const hemi = new THREE.HemisphereLight(0x88aaff, 0x000011, 0.0);
-  // scene.add(hemi);
+  //Ambient Light
+  // const ambientLight = new THREE.AmbientLight(0x404040, 0.7);
+  // scene.add(ambientLight);
 
   initRenderPipeline();
 }
@@ -104,6 +112,9 @@ function initRenderPipeline() {
     //COMMENT OUT FOR NOW
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.5;
+
+  // renderer.shadowMap.enabled = true;
+  // renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   //ADDED
   // renderer.toneMapping = THREE.NoToneMapping;
@@ -277,8 +288,6 @@ let arrayData = generateSpiralArray(100, 100); // 100x100 grid
 galaxy = new Galaxy(scene, arrayData); //CHANGE BACK LATER
 //galaxy = new LightingGalaxy(scene, arrayData);
 
-
-//COMMENTED OUT BY ME
 window.config = config;
 window.regenerateGalaxy = () => {
   arrayData = lastCanvasArrayData || generateSpiralArray(100, 100); // Always use new random array for default generation
@@ -287,21 +296,53 @@ window.regenerateGalaxy = () => {
 };
 
 window.generateStatic = () => {
+  clearScene(scene);
+  galaxy = new Galaxy(scene, arrayData); //CHANGE BACK LATER
   lastCanvasArrayData = generateSpiralArray(100, 100); // Always use new random array for default generation
   galaxy.regenerate(lastCanvasArrayData);
   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
 }
 
+window.generateLight = () => {
+  clearScene(scene);
+  lastCanvasArrayData = generateSpiralArray(100, 100); // Always use new random array for default generation
+  galaxy = new LightingGalaxy(scene, lastCanvasArrayData);
+  galaxy.regenerate(lastCanvasArrayData);
+
+      // Add real lights BY ME
+
+  for(let i = 0; i < config.NUM_POINT_LIGHTS; i++){
+      const sign_x =  Math.random() < 0.5 ? 1 : -1;
+      const sign_y =  Math.random() < 0.5 ? 1 : -1;
+
+      const pointLight = new THREE.PointLight(0xffffff, config.POINT_LIGHT_INTESITY, 0);
+      pointLight.position.set((Math.random() * config.OUTER_CORE_X_DIST) * sign_x, 
+                              (Math.random() * config.OUTER_CORE_Y_DIST) * sign_y, 
+                              0);
+
+      const pointLightHelper = new THREE.PointLightHelper(pointLight, 1); //Add point light visualizer
+      scene.add(pointLightHelper);
+      
+      
+      scene.add(pointLight); //Add point light
+  }
+    //Directional Light
+  // const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+  // directionalLight.position.set(10, 10, 10);
+  // scene.add(directionalLight);
+  // UnrealBloomPass.enabled = false;
+
+  //Hemisphere light
+  //const hemi = new THREE.HemisphereLight(0x88aaff, 0x7fc201, config.HEMISPHERE_LIGHT_INTENSITY);
+  const hemi = new THREE.HemisphereLight(0x88aaff, 0x000011, config.HEMISPHERE_LIGHT_INTENSITY);
+  scene.add(hemi);
+
+
+  baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
+
+}
+
 window.processCanvasInput = processCanvasInput;
 window.updateGalaxyParameters = updateGalaxyParameters;
-//COMMENTED OUT BY ME
-
-
-//added by me 
-// window.config = config;
-// window.regenerateGalaxy = () => {
-//   galaxy.regenerate();
-//   baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
-// };
 
 requestAnimationFrame(render);

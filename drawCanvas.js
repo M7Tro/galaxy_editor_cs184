@@ -3,6 +3,7 @@ export function initDrawCanvas() {
   const drawControls = document.getElementById('drawControls');
   const generateButton = document.getElementById('generateGalaxyButton');
   const clearButton = document.getElementById('clearCanvasButton');
+  const lightingButton = document.getElementById('LightingModeButton');
   let ctx = null;
   let isDrawing = false;
 
@@ -110,4 +111,9 @@ export function initDrawCanvas() {
   if (clearButton) {
     clearButton.addEventListener('click', clearCanvas);
   }
+
+  // if (lightingButton){
+  //   lightingButton.addEventListener('click', clearCanvas);
+  // }
+
 }

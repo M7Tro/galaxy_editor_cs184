@@ -44,7 +44,7 @@ export class LightingStar {
 
   toThreeObject(scene) {
     // Create sphere geometry for the star
-    const geometry = new THREE.SphereGeometry(0.5, 5, 5); // size can be adjusted dynamically
+    const geometry = new THREE.SphereGeometry(.5, 7, 7); // size can be adjusted dynamically
 
     // Create a lighting-aware material with color based on starType
     const material = new THREE.MeshStandardMaterial({
@@ -70,5 +70,10 @@ export class LightingStar {
     this.obj = starMesh;
 
     scene.add(starMesh);
+
+    // RectAreaLightUniformsLib.init();
+    // light = new THREE.RectAreaLight(0xffffff, 1.0, 2, 2);
+    // light.lookat(0,0,0);
+    // scene.add(light);
   }
 }

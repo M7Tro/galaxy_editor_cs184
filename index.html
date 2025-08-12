@@ -110,8 +110,24 @@
     <p>M -> Toggle GUI</p>
     <button onclick="showDrawCanvas()">Draw Galaxy</button>
     <button onclick="generateStatic()">Generate Galaxy</button>
+    <button onclick="generateLight()">Lighting Mode</button>
     <h3>Config</h3>
+        <div class="control-row"><label>SHADER_TYPE:</label>
+      <select id="shader_type">
+        <option value="composition">Composition (Default)</option>
+        <option value="blackwhite">Black & White</option>
+        <option value="invert">Invert (Fun)</option>
+        <option value="rainbowcycle">Rainbow Cycle</option>
+        <option value="heatmap">Heatmap</option>
+      </select>
+    </div>
+    <div class="control-row"><label>HEMISPHERE_LIGHT_INTENSITY:</label><input type="number" id="hemisphere_light_intensity" value="5" /></div>
+    <div class="control-row"><label>POINT_LIGHT_INTENSITY:</label><input type="number" id="point_light_intensity" value="1000" /></div>
+    <div class="control-row"><label>NUM_LIGHTS:</label><input type="number" id="num_lights" value="20" /></div>
     <div class="control-row"><label>NUM_STARS:</label><input type="number" id="num_stars" value="3500" /></div>
+    <div class="control-row"><label>NEBULA_DENSITY:</label><input type="number" id="nebula_density" value="0.05" step="0.01" /></div>
+    <div class="control-row"><label>NEBULA_SCALE_MIN:</label><input type="number" id="nebula_scale_min" value="5" /></div>
+    <div class="control-row"><label>NEBULA_SCALE_MAX:</label><input type="number" id="nebula_scale_max" value="15" /></div>
     <div class="control-row"><label>GALAXY_THICKNESS:</label><input type="number" id="galaxy_thickness" value="10" /></div>
     <div class="control-row"><label>CORE_X_DIST:</label><input type="number" id="core_x_dist" value="66" /></div>
     <div class="control-row"><label>CORE_Y_DIST:</label><input type="number" id="core_y_dist" value="66" /></div>
@@ -129,10 +145,10 @@
     <div class="control-row"><label>HALO_DENSITY:</label><input type="number" id="halo_density" value="0.1" step="0.01" /></div>
     <div class="control-row"><label>ARM_PITCH:</label><input type="number" id="arm_pitch" value="3.0" /></div>
     <div class="control-row"><label>STAR_SIZE_VARIANCE:</label><input type="number" id="star_size_variance" value="0.3" step="0.01" /></div>
-    <div class="control-row"><label>NEBULA_DENSITY:</label><input type="number" id="nebula_density" value="0.05" step="0.01" /></div>
+    <!-- <div class="control-row"><label>NEBULA_DENSITY:</label><input type="number" id="nebula_density" value="0.05" step="0.01" /></div>
     <div class="control-row"><label>NEBULA_SCALE_MIN:</label><input type="number" id="nebula_scale_min" value="5" /></div>
-    <div class="control-row"><label>NEBULA_SCALE_MAX:</label><input type="number" id="nebula_scale_max" value="15" /></div>
-    <div class="control-row"><label>SHADER_TYPE:</label>
+    <div class="control-row"><label>NEBULA_SCALE_MAX:</label><input type="number" id="nebula_scale_max" value="15" /></div> -->
+    <!-- <div class="control-row"><label>SHADER_TYPE:</label>
       <select id="shader_type">
         <option value="composition">Composition (Default)</option>
         <option value="blackwhite">Black & White</option>
@@ -140,7 +156,7 @@
         <option value="rainbowcycle">Rainbow Cycle</option>
         <option value="heatmap">Heatmap</option>
       </select>
-    </div>
+    </div> -->
   </div>
   <canvas id="drawCanvas"></canvas>
   <div id="drawControls">

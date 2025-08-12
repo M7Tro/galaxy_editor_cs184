@@ -4,6 +4,8 @@ import { config } from "./config/galaxyConfig.js";
 import { gaussianRandom, spiral } from "./utils.js";
 import { Haze } from "./haze.js";
 import { Nebula } from "./nebula.js";
+import { LightingStar } from "./LightingStar.js";
+import { LightingNebula } from "./LightingNebula.js"
 
 //Lighting galaxy class
 export class LightingGalaxy {
@@ -12,10 +14,10 @@ export class LightingGalaxy {
     this.arrayData = arrayData; // Store 2D array data if provided
     this.stars = this.arrayData ? this.generateStarsFromArray() : this.LgenerateStars();
     //this.haze = this.arrayData ? this.generateHazeFromArray() : this.generateHaze();
-    //this.nebulae = this.arrayData ? this.generateNebulaeFromArray() : this.generateNebulae();
+    this.nebulae = this.arrayData ? this.generateNebulaeFromArray() : this.generateNebulae();
     this.stars.forEach((star) => star.toThreeObject(scene));
     //this.haze.forEach((haze) => haze.toThreeObject(scene));
-    //this.nebulae.forEach((nebula) => nebula.toThreeObject(scene));
+    this.nebulae.forEach((nebula) => nebula.toThreeObject(scene));
   }
   updateScale(camera) {
     this.stars.forEach((star) => {
@@ -26,21 +28,21 @@ export class LightingGalaxy {
     //   haze.updateScale(camera);
     // });
 
-    // this.nebulae.forEach((nebula) => {
-    //   nebula.updateScale(camera);
-    // });
+    this.nebulae.forEach((nebula) => {
+      nebula.updateScale(camera);
+    });
   }
   regenerate(arrayData = null) {
     this.stars.forEach((star) => this.scene.remove(star.obj));
     //this.haze.forEach((haze) => this.scene.remove(haze.obj));
-    //this.nebulae.forEach((nebula) => this.scene.remove(nebula.obj));
+    this.nebulae.forEach((nebula) => this.scene.remove(nebula.obj));
     this.arrayData = arrayData || this.arrayData; // Update array data if provided
     this.stars = this.arrayData ? this.generateStarsFromArray() : this.LgenerateStars();
     //this.haze = this.arrayData ? this.generateHazeFromArray() : this.generateHaze();
-    //this.nebulae = this.arrayData ? this.generateNebulaeFromArray() : this.generateNebulae();
+    this.nebulae = this.arrayData ? this.generateNebulaeFromArray() : this.generateNebulae();
     this.stars.forEach((star) => star.toThreeObject(this.scene));
     //this.haze.forEach((haze) => haze.toThreeObject(this.scene));
-    //this.nebulae.forEach((nebula) => nebula.toThreeObject(this.scene));
+    this.nebulae.forEach((nebula) => nebula.toThreeObject(this.scene));
   }
 
 
@@ -191,7 +193,7 @@ LgenerateStars() {
         gaussianRandom(0, config.CORE_Y_DIST * 1.5),
         gaussianRandom(0, config.GALAXY_THICKNESS * 2)
       );
-      let nebula = new Nebula(pos, 'core');
+      let nebula = new LightingNebula(pos, 'core');
       nebulae.push(nebula);
     }
 
@@ -202,7 +204,7 @@ LgenerateStars() {
         gaussianRandom(0, config.OUTER_CORE_Y_DIST * 1.5),
         gaussianRandom(0, config.GALAXY_THICKNESS * 2)
       );
-      let nebula = new Nebula(pos, 'core');
+      let nebula = new LightingNebula(pos, 'core');
       nebulae.push(nebula);
     }
 
@@ -216,7 +218,7 @@ LgenerateStars() {
           (j * 2 * Math.PI) / config.ARMS,
           config.ARM_PITCH
         );
-        let nebula = new Nebula(pos, 'arms');
+        let nebula = new LightingNebula(pos, 'arms');
         nebulae.push(nebula);
       }
     }
@@ -245,7 +247,7 @@ LgenerateStars() {
         gaussianRandom(0, config.GALAXY_THICKNESS)
       );
       let region = this.determineRegion(pos);
-      let star = new Star(pos, region);
+      let star = new LightingStar(pos, region);
       stars.push(star);
     }
 
@@ -260,7 +262,7 @@ LgenerateStars() {
         r * Math.sin(phi) * Math.sin(theta),
         r * Math.cos(phi)
       );
-      let star = new Star(pos, 'halo');
+      let star = new LightingStar(pos, 'halo');
       stars.push(star);
     }
 
@@ -329,7 +331,7 @@ LgenerateStars() {
         gaussianRandom(0, config.GALAXY_THICKNESS * 2)
       );
       let region = this.determineRegion(pos);
-      let nebula = new Nebula(pos, region);
+      let nebula = new LightingNebula(pos, region);
       nebulae.push(nebula);
     }
 

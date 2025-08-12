@@ -86,6 +86,9 @@ export function generateSpiralArray(width, height) {
       );
 
       data[y][x] = Math.min(1, Math.max(0, intensity)); // Clamp to [0, 1]
+      //data[y][x] = intensity > 0.5 ? 1 : 0; // binary mask instead of brightness
+      //data[y][x] = 0;
+
     }
   }
 

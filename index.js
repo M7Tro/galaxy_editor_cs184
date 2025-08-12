@@ -15,6 +15,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
   });
 
   const paramMap = {
+    hemisphere_light_intensity: "HEMISPHERE_LIGHT_INTENSITY",
+    point_light_intensity: 'POINT_LIGHT_INTENSITY',
+    num_lights: 'NUM_POINT_LIGHTS',
     num_stars: 'NUM_STARS',
     galaxy_thickness: 'GALAXY_THICKNESS',
     core_x_dist: 'CORE_X_DIST',
