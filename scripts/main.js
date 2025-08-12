@@ -339,18 +339,150 @@ function computeLighting(hit, normal, baseColor, lights) {
   };
 }
 
-// Trace ray
-function trace(rayOrigin, rayDir, spheres, lights, depth = 0) {
-  if (depth > 2) return {r: 0, g: 0, b: 0};
-  let closestT = Infinity, closestSphere = null;
-  for (let sphere of spheres) {
-    let t = intersectRaySphere(rayOrigin, rayDir, sphere);
-    if (t < closestT) {
-      closestT = t;
-      closestSphere = sphere;
+// AABB helpers
+function sphereAABB(sphere) {
+  const r = sphere.radius;
+  return {
+    min: {x: sphere.center.x - r, y: sphere.center.y - r, z: sphere.center.z - r},
+    max: {x: sphere.center.x + r, y: sphere.center.y + r, z: sphere.center.z + r}
+  };
+}
+
+function unionAABB(a, b) {
+  return {
+    min: {
+      x: Math.min(a.min.x, b.min.x),
+      y: Math.min(a.min.y, b.min.y),
+      z: Math.min(a.min.z, b.min.z)
+    },
+    max: {
+      x: Math.max(a.max.x, b.max.x),
+      y: Math.max(a.max.y, b.max.y),
+      z: Math.max(a.max.z, b.max.z)
+    }
+  };
+}
+
+function intersectRayAABB(rayOrigin, rayDir, aabb) {
+  let tnear = -Infinity;
+  let tfar = Infinity;
+  const axes = ['x', 'y', 'z'];
+  for (let i = 0; i < 3; i++) {
+    const axis = axes[i];
+    if (Math.abs(rayDir[axis]) < 1e-6) {
+      if (rayOrigin[axis] < aabb.min[axis] || rayOrigin[axis] > aabb.max[axis]) {
+        return Infinity;
+      }
+    } else {
+      let t1 = (aabb.min[axis] - rayOrigin[axis]) / rayDir[axis];
+      let t2 = (aabb.max[axis] - rayOrigin[axis]) / rayDir[axis];
+      if (t1 > t2) {
+        let temp = t1;
+        t1 = t2;
+        t2 = temp;
+      }
+      tnear = Math.max(tnear, t1);
+      tfar = Math.min(tfar, t2);
+      if (tnear > tfar) return Infinity;
     }
   }
-  if (!closestSphere) return {r: 0, g: 0, b: 0}; // Black background
+  if (tfar < 0) return Infinity;
+  return Math.max(tnear, 0);
+}
+
+// BVH Node
+class BVHNode {
+  constructor() {
+    this.left = null;
+    this.right = null;
+    this.sphere = null;
+    this.aabb = {
+      min: {x: Infinity, y: Infinity, z: Infinity},
+      max: {x: -Infinity, y: -Infinity, z: -Infinity}
+    };
+  }
+}
+
+function buildBVH(spheres, depth = 0) {
+  let node = new BVHNode();
+
+  if (spheres.length === 1) {
+    node.sphere = spheres[0];
+    node.aabb = sphereAABB(node.sphere);
+    return node;
+  }
+
+  // Compute centroid bounds
+  let centroidBounds = {
+    min: {x: Infinity, y: Infinity, z: Infinity},
+    max: {x: -Infinity, y: -Infinity, z: -Infinity}
+  };
+  for (let sphere of spheres) {
+    centroidBounds.min.x = Math.min(centroidBounds.min.x, sphere.center.x);
+    centroidBounds.min.y = Math.min(centroidBounds.min.y, sphere.center.y);
+    centroidBounds.min.z = Math.min(centroidBounds.min.z, sphere.center.z);
+    centroidBounds.max.x = Math.max(centroidBounds.max.x, sphere.center.x);
+    centroidBounds.max.y = Math.max(centroidBounds.max.y, sphere.center.y);
+    centroidBounds.max.z = Math.max(centroidBounds.max.z, sphere.center.z);
+  }
+
+  // Choose longest axis
+  let extent = {
+    x: centroidBounds.max.x - centroidBounds.min.x,
+    y: centroidBounds.max.y - centroidBounds.min.y,
+    z: centroidBounds.max.z - centroidBounds.min.z
+  };
+  let axis = 'x';
+  if (extent.y > extent.x) axis = 'y';
+  if (extent.z > extent[axis]) axis = 'z';
+
+  // Sort spheres by center on axis
+  spheres.sort((a, b) => a.center[axis] - b.center[axis]);
+
+  let mid = Math.floor(spheres.length / 2);
+  node.left = buildBVH(spheres.slice(0, mid), depth + 1);
+  node.right = buildBVH(spheres.slice(mid), depth + 1);
+
+  node.aabb = unionAABB(node.left.aabb, node.right.aabb);
+
+  return node;
+}
+
+// BVH intersection
+function intersectBVH(rayOrigin, rayDir, node) {
+  let t_aabb = intersectRayAABB(rayOrigin, rayDir, node.aabb);
+  if (t_aabb === Infinity) return {sphere: null, t: Infinity};
+
+  if (node.sphere) {
+    let t = intersectRaySphere(rayOrigin, rayDir, node.sphere);
+    return {sphere: node.sphere, t: t};
+  }
+
+  let child1 = node.left;
+  let child2 = node.right;
+  let t1 = intersectRayAABB(rayOrigin, rayDir, child1.aabb);
+  let t2 = intersectRayAABB(rayOrigin, rayDir, child2.aabb);
+
+  if (t2 < t1) {
+    [child1, child2] = [child2, child1];
+    [t1, t2] = [t2, t1];
+  }
+
+  let hit1 = intersectBVH(rayOrigin, rayDir, child1);
+  if (hit1.t < t2) return hit1;
+
+  let hit2 = intersectBVH(rayOrigin, rayDir, child2);
+  if (hit1.t < hit2.t) return hit1;
+  return hit2;
+}
+
+// Trace ray
+function trace(rayOrigin, rayDir, bvhRoot, lights, depth = 0) {
+  if (depth > 2) return {r: 0, g: 0, b: 0};
+  let hit = intersectBVH(rayOrigin, rayDir, bvhRoot);
+  if (hit.t === Infinity) return {r: 0, g: 0, b: 0};
+  let closestSphere = hit.sphere;
+  let closestT = hit.t;
   let hitPoint = vecAdd(rayOrigin, vecScale(rayDir, closestT));
   let normal = vecNormalize(vecSubtract(hitPoint, closestSphere.center));
   return computeLighting(hitPoint, normal, closestSphere.color, lights);
@@ -382,6 +514,7 @@ window.renderRaytracePNG = () => {
       color: {r: 255, g: 255, b: 255}
     });
   });
+  let bvhRoot = buildBVH(spheres);
   let lights = [];
   scene.traverse(obj => {
     if (obj instanceof THREE.PointLight) {
@@ -398,6 +531,7 @@ window.renderRaytracePNG = () => {
   let local_up = vecNormalize(vecCross(right, forward));
   let fovScale = Math.tan(camera.fov * Math.PI / 360);
   const width = window.innerWidth, height = window.innerHeight;
+  //const width = 800, height = 800;
   let aspect = width / height;
   const cvs = document.createElement('canvas');
   cvs.width = width;
@@ -410,7 +544,7 @@ window.renderRaytracePNG = () => {
       let u = (x / width - 0.5) * aspect;
       let v = 0.5 - (y / height);
       let rayDir = vecNormalize(vecAdd(vecAdd(vecScale(forward, 1), vecScale(right, u * fovScale)), vecScale(local_up, v * fovScale)));
-      let color = trace(camPos, rayDir, spheres, lights);
+      let color = trace(camPos, rayDir, bvhRoot, lights);
       let idx = (y * width + x) * 4;
       imageData.data[idx] = color.r;
       imageData.data[idx + 1] = color.g;
