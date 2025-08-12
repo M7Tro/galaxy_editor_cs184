@@ -1,5 +1,5 @@
 import { Vector3 } from "three";
-import { config } from "./config/galaxyConfig.js";
+import { config } from "../config/galaxyConfig.js";
 
 export function gaussianRandom(mean = 0, stdev = 1) {
   let u = 1 - Math.random();

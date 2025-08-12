@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { Star } from "./star.js";
-import { config } from "./config/galaxyConfig.js";
+import { config } from "../config/galaxyConfig.js";
 import { gaussianRandom, spiral } from "./utils.js";
 import { Haze } from "./haze.js";
 import { Nebula } from "./nebula.js";

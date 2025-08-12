@@ -1,14 +1,17 @@
 import * as THREE from "three";
-import { BLOOM_LAYER, STAR_MAX, STAR_MIN } from "./config/renderConfig.js";
-import { starTypes } from "./config/starDis.js";
+import { BLOOM_LAYER, STAR_MAX, STAR_MIN } from "../config/renderConfig.js";
+import { starTypes } from "../config/starDis.js";
 import { clamp, gaussianRandom } from "./utils.js";
-import { config } from "./config/galaxyConfig.js";
+import { config } from "../config/galaxyConfig.js";
 
-const texture = new THREE.TextureLoader().load("./resources/sprite120.png");
+const texture = new THREE.TextureLoader().load("../resources/sprite120.png");
 const material = new THREE.SpriteMaterial({ map: texture, color: "#fff" });
 const materials = starTypes.color.map(
   (color) => new THREE.SpriteMaterial({ map: texture, color: color })
 );
+
+// In star.js, after defining materials:
+export { materials };
 
 export class Star {
   constructor(position, region = 'arms') {
