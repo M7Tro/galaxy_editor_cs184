@@ -21,6 +21,7 @@ import { LightingGalaxy } from "./LightingGalaxy.js";
 import { starTypes } from "../config/starDis.js";
 import { materials } from "./star.js";
 
+
 let canvas, renderer, camera, scene, orbit, baseComposer, bloomComposer, overlayComposer, shaderPasses, galaxy;
 let lastCanvasArrayData = null;
 
@@ -323,20 +324,44 @@ function intersectRaySphere(rayOrigin, rayDir, sphere) {
   return t > 0 ? t : Infinity;
 }
 
-// Compute lighting
-function computeLighting(hit, normal, baseColor, lights) {
-  let intensity = 0.5;
+//Compute Lighting
+function computeLighting(hitPoint, normal, baseColor, lights) {
+  let finalColor = { r: 0, g: 0, b: 0 };
+  const ambient = 0.5; 
+  const specularStrength = 0.9; 
+  const shininess = 32;
+
+  // Add ambient contribution
+  finalColor.r += baseColor.r * ambient;
+  finalColor.g += baseColor.g * ambient;
+  finalColor.b += baseColor.b * ambient;
+
+  // Process each light
   for (let light of lights) {
-    let lightDir = vecNormalize(vecSubtract(light.pos, hit));
-    intensity += Math.max(0, vecDot(normal, lightDir)) * light.intensity * 2;
+    let lightDir = vecNormalize(vecSubtract(light.pos, hitPoint));
+    let diffuse = Math.max(vecDot(normal, lightDir), 0.0) * light.intensity;
+
+    // Diffuse contribution
+    finalColor.r += baseColor.r * diffuse * 0.9; // Increased diffuse for brighter surfaces
+    finalColor.g += baseColor.g * diffuse * 0.9;
+    finalColor.b += baseColor.b * diffuse * 0.9;
+
+    // Specular contribution for glow effect
+    let viewDir = vecNormalize(vecSubtract(camera.position, hitPoint));
+    let reflectDir = vecNormalize(vecSubtract(vecScale(normal, 2 * vecDot(normal, lightDir)), lightDir));
+    let specular = Math.pow(Math.max(vecDot(viewDir, reflectDir), 0.0), shininess) * specularStrength * light.intensity;
+    
+    finalColor.r += specular * 255; // Maintain specular for bright highlights
+    finalColor.g += specular * 255;
+    finalColor.b += specular * 255;
   }
-  intensity += 1; // Emissive
-  intensity = Math.min(intensity, 3);
-  return {
-    r: Math.floor(baseColor.r * intensity),
-    g: Math.floor(baseColor.g * intensity),
-    b: Math.floor(baseColor.b * intensity)
-  };
+
+  // Clamp colors to [0, 255] and enhance brightness
+  finalColor.r = Math.min(finalColor.r * 1.5, 255); // Increased boost for brighter stars
+  finalColor.g = Math.min(finalColor.g * 1.5, 255);
+  finalColor.b = Math.min(finalColor.b * 1.5, 255);
+
+  return finalColor;
 }
 
 // AABB helpers
@@ -478,9 +503,9 @@ function intersectBVH(rayOrigin, rayDir, node) {
 
 // Trace ray
 function trace(rayOrigin, rayDir, bvhRoot, lights, depth = 0) {
-  if (depth > 2) return {r: 0, g: 0, b: 0};
+  if (depth > 2) return { r: 0, g: 0, b: 0 };
   let hit = intersectBVH(rayOrigin, rayDir, bvhRoot);
-  if (hit.t === Infinity) return {r: 0, g: 0, b: 0};
+  if (hit.t === Infinity) return { r: 10, g: 10, b: 20 }; // Subtle background color
   let closestSphere = hit.sphere;
   let closestT = hit.t;
   let hitPoint = vecAdd(rayOrigin, vecScale(rayDir, closestT));
@@ -508,12 +533,13 @@ window.renderRaytracePNG = () => {
     });
   });
   galaxy.haze.forEach(haze => {
-    spheres.push({
-      center: {x: haze.position.x, y: haze.position.y, z: haze.position.z},
-      radius: 0.1,
-      color: {r: 255, g: 255, b: 255}
-    });
+  let col = haze.obj.material.color.getStyle().match(/\d+/g).map(Number);
+  spheres.push({
+    center: { x: haze.position.x, y: haze.position.y, z: haze.position.z },
+    radius: 0.1,
+    color: { r: col[0], g: col[1], b: col[2] }
   });
+});
   let bvhRoot = buildBVH(spheres);
   let lights = [];
   scene.traverse(obj => {
@@ -530,8 +556,8 @@ window.renderRaytracePNG = () => {
   let right = vecNormalize(vecCross(forward, up));
   let local_up = vecNormalize(vecCross(right, forward));
   let fovScale = Math.tan(camera.fov * Math.PI / 360);
-  const width = window.innerWidth, height = window.innerHeight;
-  //const width = 800, height = 800;
+  //const width = window.innerWidth, height = window.innerHeight;
+  const width = 400, height = 400;
   let aspect = width / height;
   const cvs = document.createElement('canvas');
   cvs.width = width;
