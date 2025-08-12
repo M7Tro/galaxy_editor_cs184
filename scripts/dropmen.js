@@ -84,4 +84,6 @@ window.onload = () => {
   //nebula scale max 15
   const nebmax = document.getElementById("nebmax");
   nebmax.value = 15;
+
+  //Add intensity, num lights, etc:
 };

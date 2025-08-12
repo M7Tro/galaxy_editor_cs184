@@ -113,6 +113,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
     nebmin: "NEBULA_SCALE_MIN",
     nebmax: "NEBULA_SCALE_MAX",
     shader_type: "SHADER_TYPE",
+    hemisphere_light_intensity: "HEMISPHERE_LIGHT_INTENSITY",
+    point_light_intensity: 'POINT_LIGHT_INTENSITY',
+    num_lights: 'NUM_POINT_LIGHTS',
   };
 
   Object.keys(paramMap).forEach((id) => {

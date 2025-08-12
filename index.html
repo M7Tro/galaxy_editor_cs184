@@ -17,6 +17,7 @@
       <p>M -> Toggle GUI</p>
       <button id="drawbtn">Draw Galaxy</button>
       <button onclick="generateStatic()">Generate Galaxy</button>
+      <button onclick="generateLight()">Lighting Mode</button>
       <label
           for="shader_type"
           style="padding: 8px 14px; display: block; cursor: pointer"
@@ -248,6 +249,33 @@
                   aria-label="max value"
                 />
               </div>
+            </label>
+
+            <label>
+              NUM_LIGHTS:
+              <input
+                id="num_lights"
+                type="number"
+                value="20"
+              />
+            </label>
+
+            <label>
+              POINT_LIGHT_INTENSITY:
+              <input
+                id="point_light_intensity"
+                type="number"
+                value="1000"
+              />
+            </label>
+
+            <label>
+              HEMISPHERE_LIGHT_INTENSITY:
+              <input
+                id="hemisphere_light_intensity"
+                type="number"
+                value="5"
+              />
             </label>
           </div>
         </div>
