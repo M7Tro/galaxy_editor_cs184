@@ -44,17 +44,24 @@ export class LightingStar {
 
   toThreeObject(scene) {
     // Create sphere geometry for the star
-    const geometry = new THREE.SphereGeometry(.5, 7, 7); // size can be adjusted dynamically
+    const geometry = new THREE.SphereGeometry(1, 32, 32); // size can be adjusted dynamically
 
     // Create a lighting-aware material with color based on starType
     const material = new THREE.MeshStandardMaterial({
     color: starTypes.color[this.starType],
     //color: 0xff00ff,
-    emissive: 0x000000,   // no emissive light by default; adjust if you want glow
     roughness: 0.2,
     metalness: 0.0,
     emissiveIntensity: 1.0,
     });
+
+     const material_phong = new THREE.MeshPhongMaterial({
+    color: starTypes.color[this.starType],
+    //color: 0xff00ff,
+    shininess: 30,
+    emissiveIntensity: 1.0,
+    });
+
 
     // Create mesh and set position
     const starMesh = new THREE.Mesh(geometry, material);

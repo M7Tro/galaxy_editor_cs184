@@ -315,16 +315,48 @@ window.generateLight = () => {
       const sign_x =  Math.random() < 0.5 ? 1 : -1;
       const sign_y =  Math.random() < 0.5 ? 1 : -1;
 
-      const pointLight = new THREE.PointLight(0xffffff, config.POINT_LIGHT_INTESITY, 0);
-      pointLight.position.set((Math.random() * config.OUTER_CORE_X_DIST) * sign_x, 
+      // const pointLight = new THREE.PointLight(0xffffff, config.POINT_LIGHT_INTESITY, 0);
+      // pointLight.position.set((Math.random() * config.OUTER_CORE_X_DIST) * sign_x, 
+      //                         (Math.random() * config.OUTER_CORE_Y_DIST) * sign_y, 
+      //                         0);
+
+      
+
+      // const pointLightHelper = new THREE.PointLightHelper(pointLight, 1); //Add point light visualizer
+      // scene.add(pointLightHelper);
+      // scene.add(pointLight); //Add point light
+
+
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      directionalLight.position.set((Math.random() * config.OUTER_CORE_X_DIST) * sign_x, 
                               (Math.random() * config.OUTER_CORE_Y_DIST) * sign_y, 
                               0);
+      // directionalLight.position.set(0,0,0);
+      const dirLightHelper = new THREE.DirectionalLightHelper(directionalLight, 10); //Add point light visualizer
+      scene.add(dirLightHelper);
+      // //const randomObj = galaxy.stars[Math.floor(Math.random() * galaxy.stars.length)];
 
-      const pointLightHelper = new THREE.PointLightHelper(pointLight, 1); //Add point light visualizer
-      scene.add(pointLightHelper);
-      
-      
-      scene.add(pointLight); //Add point light
+      // const randomIndex = Math.floor(Math.random() * galaxy.stars.length);
+      // const randomObj = galaxy.stars[randomIndex];
+
+      // if (!randomObj) {
+      //   console.warn(`No star found at index ${randomIndex}`);
+      //   continue;
+      // }
+      // if (!randomObj.mesh) {
+      //   console.warn('randomObj.mesh is undefined', randomObj);
+      //   continue;
+      // }
+
+      // directionalLight.target.position.copy(randomObj.mesh.position);
+      scene.add(directionalLight);
+      // scene.add(directionalLight.target);
+
+      // // Force update of the target's world matrix
+      // directionalLight.target.updateMatrixWorld(true);
+
+      // // Also update the light’s matrices just in case
+      // directionalLight.updateMatrixWorld(true);
   }
     //Directional Light
   // const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
@@ -338,7 +370,54 @@ window.generateLight = () => {
   scene.add(hemi);
 
 
-  baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
+  //baseComposer.passes[1] = shaderPasses[config.SHADER_TYPE];
+  let axes = new THREE.AxesHelper(5.0);
+  scene.add(axes);
+
+  // const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1);
+  // //directionalLight1.position.set(0,0,0);
+  //       directionalLight1.position1.set((Math.random() * config.OUTER_CORE_X_DIST) * sign_x, 
+  //                             (Math.random() * config.OUTER_CORE_Y_DIST) * sign_y, 
+  //                             0);
+  // const dirLightHelper = new THREE.DirectionalLightHelper(directionalLight1, 1); //Add point light visualizer    
+  // scene.add(dirLightHelper);
+
+  // const randomObj = galaxy.stars[5];
+
+  // directionalLight1.target = randomObj.mesh;
+  // directionalLight1.castShadow = true;
+  // scene.add(directionalLight1.target);
+
+  // const geometry = new THREE.SphereGeometry(.5, 32, 32); // size can be adjusted dynamically
+  
+  //     // Create a lighting-aware material with color based on starType
+  //     const material = new THREE.MeshStandardMaterial({
+  //     color: starTypes.color[this.starType],
+  //     //color: 0xff00ff,
+  //     roughness: 0.2,
+  //     metalness: 0.0,
+  //     emissiveIntensity: 1.0,
+  //     });
+  
+  
+  //     // Create mesh and set position
+  //     const starMesh = new THREE.Mesh(geometry, material);
+  //     starMesh.position.set(0,0,0);
+  //     scene.add(starMesh);
+  
+      // Scale based on star size and size factor
+      // const scale = starTypes.size[this.starType] * this.sizeFactor;
+      // starMesh.scale.set(scale, scale, scale);
+  
+      // Optionally assign to bloom layer if you want bloom glow
+      //starMesh.layers.set(BLOOM_LAYER);
+  
+      // this.obj = starMesh;
+      // directionalLight1.target = starMesh; // sphere is your mesh at (0,0,0)
+      // scene.add(directionalLight1);
+      // scene.add(directionalLight1.target);
+  
+     
 
 }
 
