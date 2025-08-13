@@ -5,17 +5,29 @@ import { gaussianRandom, spiral } from "./utils.js";
 import { Haze } from "./haze.js";
 import { Nebula } from "./nebula.js";
 
+
 //galaxy class
 export class Galaxy {
   constructor(scene) {
     this.scene = scene;
+    this.group = new THREE.Group();
+
+    scene.add(this.group);
+
     this.stars = this.generateStars();
     this.haze = this.generateHaze();
     this.nebulae = this.generateNebulae();
-    this.stars.forEach((star) => star.toThreeObject(scene));
-    this.haze.forEach((haze) => haze.toThreeObject(scene));
-    this.nebulae.forEach((nebula) => nebula.toThreeObject(scene));
+
+    this.stars.forEach((star) => star.toThreeObject(this.group));
+    this.haze.forEach((h) => h.toThreeObject(this.group));
+    this.nebulae.forEach((n) => n.toThreeObject(this.group));
   }
+
+  update(dt, camera) {
+    this.group.rotation.z += 0.05 * dt;
+    this.updateScale(camera);
+  }
+  
   updateScale(camera) {
     this.stars.forEach((star) => {
       star.updateScale(camera);
@@ -30,6 +42,13 @@ export class Galaxy {
     });
   }
   regenerate() {
+    // this.group.clear()
+
+    // this.stars   = this.generateStars();
+    // this.haze    = this.generateHaze();
+    // this.nebulae = this.generateNebulae();
+
+
     this.stars.forEach((star) => this.scene.remove(star.obj));
     this.haze.forEach((haze) => this.scene.remove(haze.obj));
     this.nebulae.forEach((nebula) => this.scene.remove(nebula.obj));
@@ -39,6 +58,10 @@ export class Galaxy {
     this.stars.forEach((star) => star.toThreeObject(this.scene));
     this.haze.forEach((haze) => haze.toThreeObject(this.scene));
     this.nebulae.forEach((nebula) => nebula.toThreeObject(this.scene));
+ 
+    this.stars.forEach((s)     => s.toThreeObject(this.group));
+    this.haze.forEach((h)      => h.toThreeObject(this.group));
+    this.nebulae.forEach((n)   => n.toThreeObject(this.group));
   }
   generateStars() {
     let stars = [];

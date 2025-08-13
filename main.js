@@ -1,5 +1,7 @@
 import * as THREE from "three";
 
+
+
 // Data and visualization
 import { CompositionShader } from "./shaders/CompositionShader.js";
 import { BlackWhiteShader } from "./shaders/BlackWhiteShader.js";
@@ -15,13 +17,14 @@ import {
 
 // Rendering
 import { MapControls } from "three/addons/controls/MapControls.js";
-
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { Galaxy } from "./galaxy.js";
 import { config } from "./config/galaxyConfig.js";
+const clock = new THREE.Clock();
+
 
 let canvas,
   renderer,
@@ -189,6 +192,9 @@ async function render() {
   const canvas = renderer.domElement;
   camera.aspect = canvas.clientWidth / canvas.clientHeight;
   camera.updateProjectionMatrix();
+
+  const dt = clock.getDelta();
+  galaxy.update(dt, camera);
 
   galaxy.updateScale(camera);
 

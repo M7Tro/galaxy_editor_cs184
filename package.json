@@ -1,0 +1,26 @@
+{
+  "name": "galaxy_editor_cs184",
+  "version": "1.0.0",
+  "description": "This project is a 3D visualization of a procedurally generated galaxy built using [Three.js](https://threejs.org/). The aim is to create an interactive and visually stunning galaxy simulation that showcases the capabilities of procedural generation and 3D rendering in modern web development. 🌌✨🌠",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/M7Tro/galaxy_editor_cs184.git"
+  },
+  "keywords": [],
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/M7Tro/galaxy_editor_cs184/issues"
+  },
+  "homepage": "https://github.com/M7Tro/galaxy_editor_cs184#readme",
+  "dependencies": {
+    "three": "^0.179.1",
+    "vite": "^7.1.2"
+  },
+  "devDependencies": {}
+}
