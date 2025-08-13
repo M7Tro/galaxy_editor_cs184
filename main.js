@@ -315,25 +315,25 @@ window.generateLight = () => {
       const sign_x =  Math.random() < 0.5 ? 1 : -1;
       const sign_y =  Math.random() < 0.5 ? 1 : -1;
 
-      // const pointLight = new THREE.PointLight(0xffffff, config.POINT_LIGHT_INTESITY, 0);
-      // pointLight.position.set((Math.random() * config.OUTER_CORE_X_DIST) * sign_x, 
-      //                         (Math.random() * config.OUTER_CORE_Y_DIST) * sign_y, 
-      //                         0);
+      const pointLight = new THREE.PointLight(0xffffff, config.POINT_LIGHT_INTESITY, 0);
+      pointLight.position.set((Math.random() * config.OUTER_CORE_X_DIST) * sign_x, 
+                              (Math.random() * config.OUTER_CORE_Y_DIST) * sign_y, 
+                              0);
 
       
 
-      // const pointLightHelper = new THREE.PointLightHelper(pointLight, 1); //Add point light visualizer
-      // scene.add(pointLightHelper);
-      // scene.add(pointLight); //Add point light
+      const pointLightHelper = new THREE.PointLightHelper(pointLight, 1); //Add point light visualizer
+      scene.add(pointLightHelper);
+      scene.add(pointLight); //Add point light
 
 
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-      directionalLight.position.set((Math.random() * config.OUTER_CORE_X_DIST) * sign_x, 
-                              (Math.random() * config.OUTER_CORE_Y_DIST) * sign_y, 
-                              0);
+      // const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      // directionalLight.position.set((Math.random() * config.OUTER_CORE_X_DIST) * sign_x, 
+      //                         (Math.random() * config.OUTER_CORE_Y_DIST) * sign_y, 
+      //                         0);
       // directionalLight.position.set(0,0,0);
-      const dirLightHelper = new THREE.DirectionalLightHelper(directionalLight, 10); //Add point light visualizer
-      scene.add(dirLightHelper);
+      // const dirLightHelper = new THREE.DirectionalLightHelper(directionalLight, 10); //Add point light visualizer
+      // scene.add(dirLightHelper);
       // //const randomObj = galaxy.stars[Math.floor(Math.random() * galaxy.stars.length)];
 
       // const randomIndex = Math.floor(Math.random() * galaxy.stars.length);
@@ -349,7 +349,7 @@ window.generateLight = () => {
       // }
 
       // directionalLight.target.position.copy(randomObj.mesh.position);
-      scene.add(directionalLight);
+      //scene.add(directionalLight);
       // scene.add(directionalLight.target);
 
       // // Force update of the target's world matrix
