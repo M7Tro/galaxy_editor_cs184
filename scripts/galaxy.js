@@ -51,7 +51,7 @@ export class Galaxy {
       const y = star.position.y;
       star.position.x = x * cos - y * sin;
       star.position.y = x * sin + y * cos;
-      star.obj.position.copy(star.position); // Update THREE.js object position
+      star.obj.position.copy(star.position);
     });
     this.haze.forEach(haze => {
       const x = haze.position.x;
@@ -65,7 +65,9 @@ export class Galaxy {
       const y = nebula.position.y;
       nebula.position.x = x * cos - y * sin;
       nebula.position.y = x * sin + y * cos;
-      nebula.obj.position.copy(nebula.position);
+      nebula.sprites.forEach(sprite => {
+        sprite.position.copy(nebula.position); // Update all sprite layers
+      });
     });
   }
 
