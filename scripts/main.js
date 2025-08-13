@@ -268,7 +268,7 @@ window.generateLight = () => {
     const sign_x =  Math.random() < 0.5 ? 1 : -1;
     const sign_y =  Math.random() < 0.5 ? 1 : -1;
 
-    const pointLight = new THREE.PointLight(0xffffff, config.POINT_LIGHT_INTESITY, 0);
+    const pointLight = new THREE.PointLight(0xffffff, config.POINT_LIGHT_INTENSITY, 0);
     pointLight.position.set((Math.random() * config.OUTER_CORE_X_DIST) * sign_x, 
                             (Math.random() * config.OUTER_CORE_Y_DIST) * sign_y, 
                             0);
