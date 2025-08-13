@@ -8,7 +8,7 @@ import { clamp } from "./utils.js";
 import * as THREE from "three";
 
 const hazeTexture = new THREE.TextureLoader().load(
-  "./resources/feathered60.png"
+  "galaxy_editor_cs184/resources/feathered60.png"
 );
 const hazeSprite = new THREE.SpriteMaterial({
   map: hazeTexture,
