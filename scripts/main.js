@@ -202,6 +202,8 @@ async function render() {
   camera.aspect = canvas.clientWidth / canvas.clientHeight;
   camera.updateProjectionMatrix();
 
+  galaxy.rotate(config.ROTATION_SPEED);
+  
   galaxy.updateScale(camera);
 
   if (config.SHADER_TYPE === 'rainbowcycle') {

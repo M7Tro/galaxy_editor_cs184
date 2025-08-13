@@ -23,5 +23,6 @@ export const config = {
   NUM_POINT_LIGHTS: 30,
   POINT_LIGHT_INTENSITY: 5000,
   HEMISPHERE_LIGHT_INTENSITY: 1,
-  SHADER_TYPE: 'composition'
+  SHADER_TYPE: 'composition',
+  ROTATION_SPEED: 0.01
 };

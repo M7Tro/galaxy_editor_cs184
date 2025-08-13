@@ -43,6 +43,31 @@ export class Galaxy {
     this.nebulae.forEach((nebula) => nebula.toThreeObject(this.scene));
   }
 
+  rotate(speed) {
+    const cos = Math.cos(speed);
+    const sin = Math.sin(speed);
+    this.stars.forEach(star => {
+      const x = star.position.x;
+      const y = star.position.y;
+      star.position.x = x * cos - y * sin;
+      star.position.y = x * sin + y * cos;
+      star.obj.position.copy(star.position); // Update THREE.js object position
+    });
+    this.haze.forEach(haze => {
+      const x = haze.position.x;
+      const y = haze.position.y;
+      haze.position.x = x * cos - y * sin;
+      haze.position.y = x * sin + y * cos;
+      haze.obj.position.copy(haze.position);
+    });
+    this.nebulae.forEach(nebula => {
+      const x = nebula.position.x;
+      const y = nebula.position.y;
+      nebula.position.x = x * cos - y * sin;
+      nebula.position.y = x * sin + y * cos;
+      nebula.obj.position.copy(nebula.position);
+    });
+  }
 
   generateStars() {
     let stars = [];
