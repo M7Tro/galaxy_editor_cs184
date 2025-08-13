@@ -116,6 +116,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
     hemisphere_light_intensity: "HEMISPHERE_LIGHT_INTENSITY",
     point_light_intensity: 'POINT_LIGHT_INTENSITY',
     num_lights: 'NUM_POINT_LIGHTS',
+    delta_time: 'ROTATION_DELTA_TIME',
+    rotation_velocity: 'ROTATION_VELOCITY',
+    bulge_rad: 'BULGE_RADIUS',
   };
 
   Object.keys(paramMap).forEach((id) => {
