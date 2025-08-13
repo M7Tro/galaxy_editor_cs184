@@ -45,35 +45,84 @@ export class Galaxy {
 
   rotate(deltaTime) {
   // Use deltaTime for frame-rate independent rotation
-  const v0 = config.ROTATION_VELOCITY; // Flat rotation velocity (~200 km/s scaled)
-  const r0 = config.BULGE_RADIUS; // Core radius (~3 kpc)
-  const rMax = config.HALO_RADIUS; // Max radius for Keplerian decline
+  // const v0 = config.ROTATION_VELOCITY; // Flat rotation velocity (~200 km/s scaled)
+  // const r0 = config.BULGE_RADIUS; // Core radius (~3 kpc)
+  // const rMax = config.HALO_RADIUS; // Max radius for Keplerian decline
+  // let GMb = 4 * v0 * v0 * a;
 
-  // Helper function to calculate angular velocity based on radius
-  const getAngularVelocity = (r) => {
-    if (r < r0) {
-      // Linear increase in core (solid-body rotation)
-      return (v0 / r0) * (r / r0); // Scale velocity linearly in core
-    } else if (r < rMax) {
-      // Flat rotation curve in disk
-      return v0 / r;
-    } else {
-      // Keplerian decline in halo (v ~ 1/sqrt(r))
-      return (v0 / rMax) * Math.sqrt(rMax / r);
-    }
-  };
+  // // Helper function to calculate angular velocity based on radius
+  // const getAngularVelocity = (r) => {
+  //   if (r < r0) {
+  //     // Linear increase in core (solid-body rotation)
+  //     return (v0 / r0) * (r / r0); // Scale velocity linearly in core
+  //   } else if (r < rMax) {
+  //     // Flat rotation curve in disk
+  //     return v0 / r;
+  //   } else {
+  //     // Keplerian decline in halo (v ~ 1/sqrt(r))
+  //     return (v0 / rMax) * Math.sqrt(rMax / r);
+  //   }
+  // };
 
-  this.stars.forEach(star => {
-    const r = Math.sqrt(star.position.x ** 2 + star.position.y ** 2);
-    const omega = getAngularVelocity(r) * deltaTime;
-    const cos = Math.cos(omega);
-    const sin = Math.sin(omega);
-    const x = star.position.x;
-    const y = star.position.y;
-    star.position.x = x * cos - y * sin;
-    star.position.y = x * sin + y * cos;
-    star.obj.position.copy(star.position);
-  });
+  // this.stars.forEach(star => {
+  //   const r = Math.sqrt(star.position.x ** 2 + star.position.y ** 2);
+  //   const omega = getAngularVelocity(r) * deltaTime;
+  //   const cos = Math.cos(omega);
+  //   const sin = Math.sin(omega);
+  //   const x = star.position.x;
+  //   const y = star.position.y;
+  //   star.position.x = x * cos - y * sin;
+  //   star.position.y = x * sin + y * cos;
+  //   star.obj.position.copy(star.position);
+  // });
+const v0   = config.ROTATION_VELOCITY; // target flat speed
+const r0   = config.BULGE_RADIUS;      // core/scale radius
+const rMax = config.HALO_RADIUS;       // start of Keplerian falloff
+
+// Hernquist scale radius 'a' is your bulge radius r0
+const a = r0;
+
+// Match v_c(a) = v0  =>  GMb = 4 v0^2 a
+let GMb = 4 * v0 * v0 * a;
+
+const EPS = 1e-6;
+
+// ω_hern(r) = sqrt( GMb / [ r (r + a)^2 ] )
+const omegaBulge = (r) => {
+  const R = Math.max(r, EPS);
+  const RpA = R + a;
+  return Math.sqrt(GMb / (R * RpA * RpA));
+};
+
+// Transition where disk (flat) takes over (tune 2–4*a)
+const rTrans = 3 * a;
+
+const getAngularVelocity = (r) => {
+  if (r < rTrans) {
+    return omegaBulge(r);
+  } else if (r < rMax) {
+    // flat: v = v0  =>  ω = v0 / r
+    return v0 / Math.max(r, EPS);
+  } else {
+    // Keplerian decline: v ~ v0 * sqrt(rMax / r) / (rMax^0)
+    return (v0 / rMax) * Math.sqrt(rMax / Math.max(r, EPS));
+  }
+};
+
+// --- Update loop ---
+this.stars.forEach(star => {
+  const x = star.position.x;
+  const y = star.position.y;
+  const r = Math.hypot(x, y);
+
+  const dtheta = getAngularVelocity(r) * deltaTime;
+  const c = Math.cos(dtheta), s = Math.sin(dtheta);
+
+  star.position.x = x * c - y * s;
+  star.position.y = x * s + y * c;
+  star.obj.position.copy(star.position);
+});
+  
 
   this.haze.forEach(haze => {
     const r = Math.sqrt(haze.position.x ** 2 + haze.position.y ** 2);
