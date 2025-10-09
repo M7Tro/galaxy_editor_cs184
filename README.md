@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is a final work for the [CS184 computer graphics course at UC Berkeley](https://cs184.eecs.berkeley.edu/su25/project/showcase/). It launches a real-time, interactive render of a galaxy with procedurally generated objects like stars and nebulas. The user can create a galaxy by drawing it on a 2D canvas, apply artistic effects, enter a special lighting mode, and generate a raytraced PNG render. The project report for CS184 can be found [here](https://m7tro.github.io/galaxy184_final_deliverable_deploy/).
+This project is a final work for the CS184 computer graphics course at UC Berkeley, [where our work became part of the final showcase](https://cs184.eecs.berkeley.edu/su25/project/showcase/). It launches a real-time, interactive render of a galaxy with procedurally generated objects like stars and nebulas. The user can create a galaxy by drawing it on a 2D canvas, apply artistic effects, enter a special lighting mode, and generate a raytraced PNG render. The project report for CS184 can be found [here](https://m7tro.github.io/galaxy184_final_deliverable_deploy/).
 
 You can see the demo [here](https://m7tro.github.io/galaxy_editor_cs184/)
 
