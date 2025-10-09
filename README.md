@@ -9,13 +9,18 @@ This project is a final work for the CS184 computer graphics course at UC Berkel
 ## Features
 
 - **Procedural generation**: Procedurally generated stars with adjustable density, distribution, galaxy thicnkess and more!
+![Procedural generation gif](./readme_files/demo_procedural+parameters.gif)
 - **2D Canvas**: Draw a shape and we will turn it into a galaxy!
+![2D canvas](./readme_files/demo_drawing.gif)
+- **Artistic effects**: Apply artistic post-processing shaders that can turn your galaxy black-and-white!
+![Effects](./readme_files/demo_effects.gif)
+- **Ray tracing**: Generate a PND created by ray tracing with BVH acceleration that uses a sphere-representation of a galaxy
+![tracing](./readme_files/demo_raytrace.gif)
+- **Lighting Mode**: A special lighting mode that lets you set up light sources within your galaxy
+![lighting mode](./readme_files/demo_lightingmode.gif)
+- **Realistic Rotation**: Realistically looking rotation of stars that compose the galaxy
 - **Interactive Camera**: Pan, zoom, and rotate to explore the galaxy.
 - **Different objects**: Stars, haze, nebulas
-- **Artistic effects**: Apply artistic post-processing shaders that can turn your galaxy black-and-white!
-- **Ray tracing**: Generate a PND created by ray tracing with BVH acceleration that uses a sphere-representation of a galaxy
-- **Lighting Mode**: A special lighting mode that lets you set up light sources within your galaxy
-- **Realistic Rotation**: Realistically looking rotation of stars that compose the galaxy
 
 ## Technologies Used
 
@@ -65,6 +70,7 @@ The galaxy parameters can be modified directly in the JavaScript configuration f
 ## Acknowledgments
 
 - The project was started with the great work from the work of [Eric Lin](https://github.com/ericafk0001/threejs-procedral-galaxy#).
+![starter project](./readme_files/demo_starter.gif)
 - [Three.js Documentation](https://threejs.org/docs/)
 
 ---
